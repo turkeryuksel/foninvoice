@@ -16,143 +16,174 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* --- CSS RESET & VARS --- */
+        /* --- CSS RESET & TEMEL AYARLAR --- */
         :root {
-            --sidebar-bg: #1e1e2d;
-            --sidebar-text: #a2a3b7;
-            --sidebar-active: #3699ff;
-            --bg-body: #eef0f8;
-            --text-dark: #181c32;
+            --sidebar-width: 260px;
+            --header-height: 60px;
+            --primary: #3699ff;
+            --dark: #1e1e2d;
+            --bg: #eef0f8;
         }
-        * { box-sizing: border-box; outline: none; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; height: 100vh; overflow: hidden; color: #3f4254; }
 
-        /* SCROLLBAR GÜZELLEŞTİRME */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 
-        /* LOGIN */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #131313; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        .inp-log { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #e4e6ef; border-radius: 6px; background: #f5f8fa; font-weight: 500; }
-        .btn-log { width: 100%; padding: 12px; background: var(--sidebar-active); color: white; border: none; font-weight: 600; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        /* --- LOGIN EKRANI --- */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #131313; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; }
+        .inp-log { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; font-size: 16px; }
+        .btn-log { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; font-weight: 600; border-radius: 6px; cursor: pointer; font-size: 16px; }
 
-        /* SIDEBAR */
-        .sidebar { width: 280px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 100; }
-        .brand { height: 60px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #151521; }
-        .brand-logo-wrapper { background: white; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-        .brand img { max-height: 30px; max-width: 100%; display: block; }
-        
-        .user-profile { padding: 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .u-email { color: #fff; font-size: 12px; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; }
-        .u-role { font-size: 10px; color: #5f6279; font-weight: 500; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .u-role.admin { color: #f64e60; }
-        .menu { list-style: none; padding: 15px 0; margin: 0; }
-        .menu li { padding: 12px 25px; cursor: pointer; color: var(--sidebar-text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
-        .menu li:hover, .menu li.active { color: #fff; background: rgba(255,255,255,0.03); border-right: 3px solid var(--sidebar-active); }
+        /* --- SIDEBAR (MENÜ) --- */
+        .sidebar { 
+            width: var(--sidebar-width); 
+            background: var(--dark); 
+            display: flex; flex-direction: column; 
+            flex-shrink: 0; 
+            transition: transform 0.3s ease; 
+            z-index: 1000;
+            height: 100%;
+        }
+        .brand { height: var(--header-height); display: flex; align-items: center; justify-content: center; background: #151521; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .brand img { height: 30px; }
+        .user-profile { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .u-email { color: #fff; font-weight: 600; display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .u-role { font-size: 10px; color: #737792; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; display: block; }
+        .menu { list-style: none; padding: 0; margin: 0; }
+        .menu li { padding: 15px 25px; cursor: pointer; color: #a2a3b7; font-size: 14px; display: flex; align-items: center; gap: 10px; transition: 0.2s; border-left: 3px solid transparent; }
+        .menu li:hover, .menu li.active { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); }
         .admin-only { display: none; }
 
-        /* MAIN */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .header-bar { height: 60px; background: #fff; border-bottom: 1px solid #e4e6ef; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
-        .menu-btn { display: none; font-size: 20px; cursor: pointer; color: #333; margin-right: 15px; }
-        .content-area { flex: 1; overflow: hidden; padding: 15px; position: relative; }
+        /* --- MAIN AREA --- */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
+        
+        .header-bar { 
+            height: var(--header-height); background: #fff; border-bottom: 1px solid #e4e6ef; 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; 
+            flex-shrink: 0;
+        }
+        .menu-toggle { display: none; font-size: 20px; cursor: pointer; color: #333; padding: 10px; margin-left: -10px; }
+
+        .content-area { flex: 1; overflow: hidden; position: relative; padding: 20px; }
         .view { display: none; width: 100%; height: 100%; flex-direction: column; }
         .view.active { display: flex; }
 
-        /* EDITOR */
-        .editor-container { display: flex; width: 100%; height: 100%; gap: 20px; overflow: hidden; }
-        .form-panel { width: 350px; background: white; border-radius: 8px; overflow-y: auto; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #e4e6ef; border-radius: 4px; font-size: 12px; background: #f5f8fa; color: #3f4254; transition: 0.2s; }
-        .form-control:focus { background: #fff; border-color: var(--sidebar-active); }
-        .grp-label { font-size: 10px; font-weight: 800; color: #181c32; margin-bottom: 2px; display: block; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
+        /* --- EDITOR LAYOUT --- */
+        .editor-container { display: flex; height: 100%; gap: 20px; }
         
-        .btn { padding: 10px; border-radius: 6px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; color: white; width: 100%; display: flex; justify-content: center; align-items: center; gap: 5px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--sidebar-active); }
+        /* FORM PANEL */
+        .form-panel { 
+            width: 360px; background: white; border-radius: 8px; 
+            padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
+            flex-shrink: 0; box-shadow: 0 0 15px rgba(0,0,0,0.03);
+        }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #f9f9f9; }
+        .form-control:focus { background: #fff; border-color: var(--primary); }
+        .grp-label { font-size: 11px; font-weight: 700; color: #181c32; margin-top: 5px; display: block; }
+
+        /* BUTTONS */
+        .btn { padding: 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; }
+        .btn:active { opacity: 0.8; }
+        .btn-primary { background: var(--primary); }
         .btn-success { background: #1bc5bd; }
         .btn-danger { background: #f64e60; }
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
 
-        /* PREVIEW (A4 COMPACT MODE) */
-        .preview-panel { flex: 1; background: #555; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 30px; }
+        /* --- PREVIEW PANEL (A4) --- */
+        .preview-panel { 
+            flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; 
+            display: flex; justify-content: center; padding: 40px; 
+            position: relative;
+        }
         .page { 
             width: 210mm; height: 297mm; min-width: 210mm; min-height: 297mm;
-            background: white; padding: 10mm; box-shadow: 0 0 30px rgba(0,0,0,0.3); 
+            background: white; padding: 10mm; box-shadow: 0 5px 30px rgba(0,0,0,0.3); 
             color: #000; position: relative; display: flex; flex-direction: column; 
-            margin-bottom: 20px; overflow: hidden; transform-origin: top center;
+            margin-bottom: 20px; transform-origin: top center;
         }
 
-        /* INVOICE STYLING */
-        .inv-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px; flex-shrink: 0; }
-        .logo-box { width: 180px; height: 70px; display: flex; align-items: center; }
-        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
-        .exporter-info { text-align: right; font-size: 9px; color: #000; line-height: 1.3; }
-        .exporter-info h1 { font-size: 14px; font-weight: 900; margin: 0 0 2px 0; text-transform: uppercase; }
-        .inv-title { text-align: center; font-size: 18px; font-weight: 800; margin: 5px 0 2px 0; letter-spacing: 1px; text-decoration: underline; flex-shrink: 0; }
-        .page-num { text-align: center; font-size: 9px; color: #666; margin-bottom: 5px; font-style: italic; flex-shrink: 0; }
-        .info-grid { display: grid; grid-template-columns: 1.6fr 0.4fr; gap: 10px; margin-bottom: 5px; flex-shrink: 0; }
-        .box { border: 1px solid #000; padding: 5px; font-size: 10px; position: relative; }
-        .box-title { background: #eee; font-weight: 700; text-align: center; border-bottom: 1px solid #000; margin: -5px -5px 4px -5px; padding: 2px; font-size: 9px; }
-        .tbl { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 0; }
-        .tbl th { background: #eee; border: 1px solid #000; padding: 3px; font-weight: 700; }
-        .tbl td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; height: 18px; }
-        .footer-wrapper { margin-top: auto; padding-top: 10px; flex-shrink: 0; page-break-inside: avoid; }
-        .ship-box { border: 2px solid #000; margin-top: 10px; margin-bottom: 5px; }
+        /* --- INVOICE CSS (PRINT & PREVIEW) --- */
+        .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 5px; }
+        .logo-box img { height: 60px; object-fit: contain; }
+        .exporter-info { text-align: right; font-size: 9px; line-height: 1.3; color: #000; }
+        .exporter-info h1 { font-size: 14px; font-weight: 900; margin: 0; }
+        .inv-title { text-align: center; font-size: 16px; font-weight: 800; text-decoration: underline; margin: 5px 0; }
+        .info-grid { display: grid; grid-template-columns: 70% 29%; gap: 1%; margin-bottom: 5px; font-size: 10px; }
+        .box { border: 1px solid #000; padding: 5px; }
+        .box-title { background: #eee; font-weight: 700; text-align: center; border-bottom: 1px solid #000; margin: -5px -5px 3px -5px; padding: 2px; }
+        .tbl { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 5px; }
+        .tbl th { background: #eee; border: 1px solid #000; padding: 4px; font-weight: 700; }
+        .tbl td { border: 1px solid #000; padding: 3px; }
+        .footer-wrapper { margin-top: auto; padding-top: 10px; page-break-inside: avoid; }
+        .ship-box { border: 2px solid #000; margin-top: 5px; }
         .ship-head { background: #000; color: white; text-align: center; font-size: 9px; font-weight: 700; padding: 2px; }
         .ship-grid { display: grid; grid-template-columns: repeat(4, 1fr); font-size: 8px; }
-        .scell { border-right: 1px solid #999; border-bottom: 1px solid #999; padding: 3px; height: 35px; display: flex; flex-direction: column; justify-content: center; }
+        .scell { border-right: 1px solid #999; border-bottom: 1px solid #999; padding: 2px; height: 30px; display: flex; flex-direction: column; justify-content: center; }
         .scell:nth-child(4n) { border-right: none; }
-        .slbl { font-weight: 700; color: #555; margin-bottom: 1px; font-size: 7px; }
+        .slbl { font-weight: 700; color: #555; font-size: 7px; }
         .sval { font-weight: 700; color: #000; font-size: 9px; }
-        .footer { border-top: 2px solid #000; padding-top: 5px; display: flex; justify-content: space-between; font-size: 8px; }
-        
-        /* LISTE GÖRÜNÜMÜ İYİLEŞTİRMELERİ */
-        .list-wrapper, .user-create-card { background: white; padding: 20px; border-radius: 8px; height: 100%; overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
-        .invoice-item { 
-            background: #fff; border: 1px solid #e4e6ef; border-radius: 8px; padding: 15px; margin-bottom: 10px; 
-            cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 8px;
-        }
-        .invoice-item:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: var(--sidebar-active); }
-        .inv-badge { 
-            background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 10px; padding: 4px 8px; border-radius: 4px; 
-            display: inline-block; min-width: 40px; text-align: center; margin-right: 8px;
-        }
-        .inv-row-top { display: flex; justify-content: space-between; align-items: center; }
-        .inv-customer { font-weight: 700; font-size: 14px; color: #181c32; }
-        .inv-number { font-weight: 600; font-size: 12px; color: #7e8299; background: #f5f8fa; padding: 2px 6px; border-radius: 4px; }
+        .footer { border-top: 2px solid #000; padding-top: 5px; display: flex; justify-content: space-between; font-size: 8px; margin-top: 5px; }
 
-        /* RESPONSIVE / MOBİL CSS */
+        /* --- LISTE VE KULLANICI EKRANI --- */
+        .list-wrapper, .user-create-card { background: white; border-radius: 8px; padding: 20px; overflow-y: auto; height: 100%; }
+        .invoice-item { 
+            background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; 
+        }
+        .invoice-item:active { background: #f5f8fa; }
+        .inv-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .inv-badge { background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; margin-right: 8px; }
+        .inv-cust { font-weight: 700; font-size: 14px; color: #333; }
+        .inv-no { font-weight: 600; font-size: 12px; color: #888; background: #f9f9f9; padding: 2px 6px; border-radius: 4px; }
+        .inv-btm { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
+
+        /* --- OVERLAY (MOBİL İÇİN) --- */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; display: none; }
+        .overlay.active { display: block; }
+
+        /* --- RESPONSIVE / MOBILE CSS --- */
         @media (max-width: 900px) {
-            .sidebar { position: fixed; left: -280px; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
-            .sidebar.active { transform: translateX(280px); left: 0; }
-            .menu-btn { display: block; }
-            .editor-container { flex-direction: column; overflow-y: auto; }
-            .form-panel { width: 100%; max-height: none; overflow: visible; box-shadow: none; border-bottom: 1px solid #eee; }
-            .preview-panel { min-height: 500px; padding: 10px; background: #333; }
-            .page { transform: scale(0.6); transform-origin: top left; margin-bottom: -100px; } /* Telefondan sayfayı sığdırmak için küçültme */
+            /* Menü Gizle */
+            .sidebar { position: fixed; left: -280px; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            .sidebar.active { transform: translateX(280px); }
+            .menu-toggle { display: block; }
             .header-bar { padding: 0 15px; }
-            /* Mobil Tablolar */
-            .info-grid { grid-template-columns: 1fr; }
+            .content-area { padding: 10px; }
+
+            /* Editor Dikey Yerleşim */
+            .editor-container { flex-direction: column; overflow-y: scroll; gap: 0; }
+            .form-panel { width: 100%; box-shadow: none; border-bottom: 1px solid #ddd; padding: 15px; overflow: visible; }
+            
+            /* Preview Alanı */
+            .preview-panel { 
+                min-height: 500px; padding: 10px; background: #5e6278; 
+                align-items: flex-start; /* Sayfayı yukarı sabitle */
+                overflow: hidden; /* Taşmayı engelle */
+            }
+            
+            /* A4 Sayfayı Küçült (Zoom Out) */
+            .page { 
+                /* Otomatik Scale JS ile verilecek ama varsayılanı koyalım */
+                transform: scale(0.45); 
+                transform-origin: top center; 
+                margin-bottom: -140mm; /* Küçülünce altta kalan boşluğu ye */
+            }
+
+            /* Responsive Tablo */
             .ship-grid { grid-template-columns: repeat(2, 1fr); }
             .scell:nth-child(2n) { border-right: none; }
             .scell:nth-child(4n) { border-right: 1px solid #999; }
         }
 
-        /* PRINT */
         @media print {
-            .sidebar, #login-screen, .header-bar, .form-panel { display: none !important; }
+            .sidebar, .header-bar, .form-panel, .menu-toggle { display: none !important; }
             .main, .view, .preview-panel { display: block !important; padding: 0 !important; background: white !important; height: auto !important; overflow: visible !important; }
-            .page { box-shadow: none; margin: 0; width: 100%; height: 297mm; page-break-after: always; transform: none !important; }
-            .list-wrapper, .user-create-card { display: none; }
+            .page { box-shadow: none; margin: 0; width: 100%; height: 297mm; page-break-after: always; transform: none !important; margin-bottom: 0 !important; }
         }
-
-        /* Overlay for mobile menu */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; display: none; }
-        .overlay.active { display: block; }
     </style>
 </head>
 <body>
@@ -178,9 +209,7 @@
 
     <div class="sidebar" id="sidebar">
         <div class="brand">
-            <div class="brand-logo-wrapper">
-                <img src="https://i.hizliresim.com/bocqcmc.png" alt="FON LOGO" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO'">
-            </div>
+            <img src="https://i.hizliresim.com/bocqcmc.png" alt="FON LOGO" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO'">
         </div>
         <div class="user-profile">
             <span class="u-email" id="u-email">...</span>
@@ -197,10 +226,10 @@
     <div class="main">
         <div class="header-bar">
             <div style="display:flex; align-items:center;">
-                <i class="fas fa-bars menu-btn" onclick="toggleSidebar()"></i>
-                <div>
-                    <div style="font-weight:700;">Fatura Yönetim Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v10.3 Mobile</div>
+                <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+                <div style="margin-left:10px;">
+                    <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
+                    <div style="font-size:11px; color:#aaa;">v10.4 Mobile Ready</div>
                 </div>
             </div>
         </div>
@@ -212,76 +241,76 @@
                     <div class="form-panel">
                         
                         <div id="admin-owner-wrapper" style="display:none; background:#ffe2e5; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #f64e60;">
-                            <span class="grp-label" style="color:#f64e60;">YÖNETİCİ: FATURA SAHİBİ</span>
+                            <span class="grp-label" style="color:#f64e60; margin-top:0;">YÖNETİCİ: FATURA SAHİBİ</span>
                             <input id="i-owner" class="form-control" list="dl-users" placeholder="kullanici@mail.com">
                         </div>
 
-                        <button class="btn btn-warning" onclick="resetForm()">Temizle / Yeni</button>
+                        <button class="btn btn-warning" onclick="resetForm()">TEMİZLE / YENİ</button>
                         
                         <span class="grp-label">FATURA TİPİ & PARA BİRİMİ</span>
                         <select id="i-type" class="form-control" onchange="upd()">
                             <option>PROFORMA INVOICE</option>
                             <option>COMMERCIAL INVOICE</option>
                         </select>
-                        <div style="display:flex; gap:5px;">
+                        <div style="display:flex; gap:8px;">
                             <select id="i-currency" class="form-control" onchange="renderPages()">
                                 <option value="USD">USD ($)</option>
                                 <option value="EUR">EUR (€)</option>
                                 <option value="TL">TL (₺)</option>
                                 <option value="RUB">RUB (₽)</option>
                             </select>
-                            <input id="i-contr" class="form-control" placeholder="Contract No" oninput="upd()">
+                            <input id="i-contr" class="form-control" placeholder="Sözleşme No" oninput="upd()">
                         </div>
 
-                        <div style="background:#f0f2f5; padding:8px; border-radius:6px; border:1px solid #e4e6ef;">
-                            <span class="grp-label">MÜŞTERİ (OTO TAMAMLAMA)</span>
-                            <input id="i-imp" class="form-control" placeholder="Firma Adı" oninput="upd()" list="dl-customers">
-                            <textarea id="i-addr" class="form-control" rows="2" placeholder="Adres" oninput="upd()" style="margin-top:5px;"></textarea>
-                            <input id="i-tel" class="form-control" placeholder="Telefon" oninput="upd()" style="margin-top:5px;">
+                        <div style="background:#f0f2f5; padding:10px; border-radius:6px; border:1px solid #e4e6ef;">
+                            <span class="grp-label" style="margin-top:0;">MÜŞTERİ (OTO TAMAMLAMA)</span>
+                            <input id="i-imp" class="form-control" placeholder="Firma Adı Ara..." oninput="upd()" list="dl-customers" style="margin-bottom:5px;">
+                            <textarea id="i-addr" class="form-control" rows="2" placeholder="Adres" oninput="upd()" style="margin-bottom:5px;"></textarea>
+                            <input id="i-tel" class="form-control" placeholder="Telefon" oninput="upd()">
                         </div>
 
-                        <div style="display:flex; gap:5px;">
-                            <div style="flex:1"><span class="grp-label">NO</span><input id="i-no" class="form-control" oninput="upd()"></div>
+                        <div style="display:flex; gap:8px;">
+                            <div style="flex:1"><span class="grp-label">FATURA NO</span><input id="i-no" class="form-control" oninput="upd()"></div>
                             <div style="flex:1"><span class="grp-label">TARİH</span><input type="date" id="i-date" class="form-control" oninput="upd()"></div>
                         </div>
 
-                        <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+                        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                         <span class="grp-label">ÜRÜN EKLE (OTO TAMAMLAMA)</span>
-                        <input id="p-name" class="form-control" placeholder="Ürün Adı" list="dl-products">
-                        <div style="display:flex; gap:5px; margin-top:5px;">
+                        <input id="p-name" class="form-control" placeholder="Ürün Adı Ara..." list="dl-products">
+                        <div style="display:flex; gap:8px; margin-top:5px;">
                             <input id="p-code" class="form-control" placeholder="Kod" style="flex:1">
-                            <input id="p-qty" type="number" class="form-control" placeholder="Adet" style="width:60px;">
-                            <input id="p-price" type="number" class="form-control" placeholder="Fiyat" step="0.01" style="width:70px;">
+                            <input id="p-qty" type="number" class="form-control" placeholder="Adet" style="width:70px;">
+                            <input id="p-price" type="number" class="form-control" placeholder="Fiyat" step="0.01" style="width:80px;">
                         </div>
-                        <button class="btn btn-primary" style="margin-top:5px;" onclick="addItem()">+ Listeye Ekle</button>
+                        <button class="btn btn-primary" style="margin-top:8px;" onclick="addItem()">+ LİSTEYE EKLE</button>
 
-                        <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
-                        <span class="grp-label">LOJİSTİK</span>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                        <span class="grp-label">LOJİSTİK BİLGİLERİ</span>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                             <input id="i-load" class="form-control" placeholder="Loading" oninput="upd()">
                             <input id="i-trans" class="form-control" placeholder="Transport" oninput="upd()">
                             <input id="i-pay" class="form-control" placeholder="Payment" oninput="upd()">
                             <input id="i-del" class="form-control" placeholder="Delivery" oninput="upd()">
                         </div>
-                        <div style="display:flex; gap:5px; margin-top:5px;">
-                            <input id="i-box" class="form-control" placeholder="Box" oninput="upd()">
-                            <input id="i-nw" class="form-control" placeholder="Net" oninput="upd()">
-                            <input id="i-gw" class="form-control" placeholder="Gross" oninput="upd()">
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <input id="i-box" class="form-control" placeholder="Koli" oninput="upd()">
+                            <input id="i-nw" class="form-control" placeholder="Net KG" oninput="upd()">
+                            <input id="i-gw" class="form-control" placeholder="Brüt KG" oninput="upd()">
                         </div>
                         
-                        <div style="margin-top:5px;">
+                        <div style="margin-top:8px;">
                             <span class="grp-label">G.T.I.P KODLARI</span>
-                            <textarea id="i-gtip" class="form-control" rows="2" placeholder="3303.00.90.00.11, 3923..." oninput="upd()"></textarea>
+                            <textarea id="i-gtip" class="form-control" rows="2" placeholder="Örn: 3303.00.90.00.11" oninput="upd()"></textarea>
                         </div>
 
-                        <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+                        <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
                         
                         <button class="btn btn-success" onclick="saveInvoice()">KAYDET (CLOUD)</button>
-                        <div style="display:flex; gap:5px; margin-top:5px;">
+                        <div style="display:flex; gap:10px; margin-top:10px;">
                             <button class="btn btn-excel" onclick="exportToExcel()">EXCEL</button>
                             <button class="btn btn-primary" style="background:#181c32;" onclick="downloadPDF()">PDF</button>
                         </div>
-                        <button class="btn btn-danger" style="margin-top:5px; display:none;" id="btn-del" onclick="deleteInvoice()">SİL</button>
+                        <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del" onclick="deleteInvoice()">SİL</button>
                     </div>
 
                     <div class="preview-panel" id="print-area"></div>
@@ -298,7 +327,7 @@
             <div id="view-users" class="view">
                 <div class="user-create-card">
                     <h3>Kullanıcı Ekle</h3>
-                    <p style="font-size:12px; color:#666;">Kullanıcı sadece kendi işlemini görür.</p>
+                    <p style="font-size:13px; color:#666;">Yeni kullanıcı oluşturun. Kullanıcı sadece kendi kayıtlarını görebilir.</p>
                     <input id="new-email" class="form-control" placeholder="E-posta" style="margin-bottom:10px;">
                     <input id="new-pass" class="form-control" placeholder="Şifre" type="password" style="margin-bottom:15px;">
                     <button class="btn btn-success" onclick="createUser()">OLUŞTUR</button>
@@ -353,7 +382,7 @@
             }
         });
 
-        // MOBİL MENÜ TOGGLE
+        // MOBİL MENÜ
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
@@ -486,7 +515,7 @@
                         </table>
                     </div>
                 </div>
-                <table class="tbl" style="margin-top:5px;">
+                <table class="tbl">
                     <thead><tr><th style="width:5%">No</th><th style="width:45%">Description</th><th style="width:15%">Code</th><th style="width:10%">Qty</th><th style="width:10%">Price</th><th style="width:15%">Total</th></tr></thead>
                     <tbody>
             `;
@@ -548,7 +577,24 @@
             
             let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length/LIMIT_OTHER)}</div>` : '';
             currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + getFooterHTML(grandTotal, totalUnits);
+
+            // --- MOBİL İÇİN OTOMATİK SCALE ---
+            autoScalePages();
         }
+
+        // --- SCALE ENGINE (MOBİL İÇİN) ---
+        function autoScalePages() {
+            if (window.innerWidth > 900) return; // Masaüstünde yapma
+            const panelWidth = document.querySelector('.preview-panel').offsetWidth - 20; // Padding düş
+            const A4Width = 793; // 210mm in pixels (approx)
+            const scale = panelWidth / A4Width;
+            
+            document.querySelectorAll('.page').forEach(page => {
+                page.style.transform = `scale(${scale})`;
+                page.style.marginBottom = `-${(1123 * (1 - scale))}px`; // 1123px = 297mm height
+            });
+        }
+        window.addEventListener('resize', autoScalePages);
 
         function exportToExcel() {
             const d = {
@@ -695,17 +741,16 @@
                     const el = document.createElement('div');
                     el.className = 'invoice-item';
                     
-                    // --- TASARIM GÜNCELLENDİ (YAPIŞIK GÖRÜNTÜ GİDERİLDİ) ---
                     el.innerHTML = `
-                        <div class="inv-row-top">
+                        <div class="inv-top">
                             <div style="display:flex; align-items:center; overflow:hidden;">
                                 <span class="inv-badge">${d.currency}</span>
-                                <span class="inv-customer">${d.importer}</span>
+                                <span class="inv-cust">${d.importer}</span>
                             </div>
-                            <span class="inv-number">${d.no}</span>
+                            <span class="inv-no">${d.no}</span>
                         </div>
                         
-                        <div style="margin-top:8px; display:flex; justify-content:space-between; color:#7e8299; font-size:11px;">
+                        <div class="inv-btm">
                             <div style="display:flex; align-items:center; gap:5px;">
                                 <i class="far fa-calendar-alt"></i> ${d.date}
                             </div>
@@ -759,6 +804,12 @@
             document.getElementById('i-gtip').value = d.gtip || '';
             items = d.items || [];
             renderPages(); switchView('editor');
+            
+            // Mobildeysen ve fatura yüklediysen menüyü kapat
+            if(window.innerWidth <= 900) {
+               document.getElementById('sidebar').classList.remove('active');
+               document.querySelector('.overlay').classList.remove('active');
+            }
         }
 
         function deleteInvoice() {
