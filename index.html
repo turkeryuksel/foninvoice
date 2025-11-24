@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FonInvoice - Bulut Fatura Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        /* CSS AYARLARI */
+        body { font-family: 'Roboto', sans-serif; background-color: #f4f6f8; color: #333; margin:0; }
+        .hidden { display: none !important; }
+        
+        /* Login */
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .login-box { background: white; padding: 40px; border-radius: 12px; width: 350px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .login-box h2 { color: #333; margin: 10px 0 20px 0; font-weight: 700; letter-spacing: -0.5px; }
+        .login-box input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; }
+        .login-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; margin-top: 15px; transition: 0.2s; }
+        .login-btn:hover { background: #1d4ed8; }
+        
+        /* Dashboard */
+        .nav-bar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+        .app-brand { font-size: 20px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+        .container { display: grid; grid-template-columns: 260px 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; height: calc(100vh - 70px); }
+        
+        /* Sidebar */
+        .sidebar { background: white; padding: 0; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar-header { padding: 15px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .invoice-list-container { flex-grow: 1; overflow-y: auto; }
+        .invoice-item { padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
+        .invoice-item:hover { background: #f8fafc; border-left-color: #2563eb; }
+        .invoice-item h4 { margin: 0; font-size: 14px; color: #334155; }
+        .invoice-item p { margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; }
+        
+        /* Editor */
+        .editor-area { background: white; padding: 40px; border-radius: 8px; border: 1px solid #e2e8f0; overflow-y: auto; }
+        .invoice-header { display: flex; justify-content: space-between; border-bottom: 2px solid #0f172a; padding-bottom: 25px; margin-bottom: 30px; }
+        .logo-img { width: 180px; display: block; }
+        
+        /* Inputlar */
+        input, select, textarea { border: 1px solid #cbd5e1; padding: 8px; font-family: inherit; border-radius: 4px; font-size: 13px; }
+        .editable-area { width: 100%; min-height: 90px; resize: vertical; background: #f8fafc; line-height: 1.5; }
+        .table-input { width: 100%; border: none; background: transparent; padding: 5px; }
+        .table-input:focus { outline: 2px solid #2563eb; background: white; }
+        
+        /* Tablo */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #0f172a; color: white; padding: 12px 10px; text-align: left; font-size: 12px; letter-spacing: 0.5px; border-radius: 4px 4px 0 0; }
+        td { border-bottom: 1px solid #e2e8f0; padding: 8px 10px; }
+        tr:last-child td { border-bottom: none; }
+        
+        /* Butonlar */
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; color: white; font-size: 13px; font-weight: 500; margin-left: 5px; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
+        .btn-blue { background: #3b82f6; } .btn-blue:hover { background: #2563eb; }
+        .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
+        .btn-dark { background: #334155; } .btn-dark:hover { background: #1e293b; }
+
+        /* FOOTER GRID (Yeni Eklendi) */
+        .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; page-break-inside: avoid; }
+        .bank-area { background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px; }
+        .bank-area h4 { margin-top: 0; color: #334155; font-size: 13px; font-weight: 700; }
+        .bank-area textarea { height: 100px; font-family: 'Courier New', monospace; font-size: 12px; border: none; width: 100%; background: transparent; resize: none; padding: 0; }
+        
+        /* İMZA (Yeni Eklendi) */
+        .signature-section { margin-top: 60px; text-align: right; page-break-inside: avoid; }
+        .signature-box { display: inline-block; text-align: center; }
+        .signature-line { border-top: 1px solid #333; width: 220px; display: block; margin-bottom: 5px; }
+
+        @media print {
+            .no-print, .nav-bar, .sidebar { display: none !important; }
+            .container { display: block; padding: 0; margin: 0; height: auto; }
+            .editor-area { border: none; padding: 0; overflow: visible; }
+            input, textarea { border: none !important; padding: 0; }
+            .invoice-header { border-bottom: 2px solid #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <img src="https://i.imgur.com/lDPzvsB.png" alt="Fon Cosmetics Logo" style="width: 180px; display: block; margin: 0 auto 15px auto;">
+            <p style="color: #64748b; margin-top: 0; font-size: 15px; font-weight: 500;">Invoice System</p>
+            
+            <div style="text-align: left; margin-top: 25px;">
+                <label style="font-size: 12px; font-weight: 600; color: #475569;">E-posta</label>
+                <input type="email" id="email" placeholder="admin@fonkozmetik.com">
+            </div>
+            <div style="text-align: left; margin-top: 15px;">
+                <label style="font-size: 12px; font-weight: 600; color: #475569;">Şifre</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+
+            <button class="login-btn" id="btnLogin">GİRİŞ YAP</button>
+            <p id="login-msg" style="color: #ef4444; font-size: 13px; margin-top: 15px; font-weight: 500;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <div class="nav-bar">
+            <div class="app-brand">
+                Fon<span style="color: #2563eb;">Invoice</span>
+                <span style="font-size: 11px; color: #64748b; font-weight: 400; margin-left: 10px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">Bulut Sistem</span>
+            </div>
+            <div>
+                <span id="user-display" style="font-weight: 500; font-size: 14px; margin-right: 15px; color: #334155;">User</span>
+                <button class="btn btn-red" id="btnLogout">Çıkış</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3 style="margin:0; font-size: 14px; color: #334155;">Faturalar</h3>
+                    <button class="btn btn-blue" id="btnNewInvoice" style="padding: 6px 12px; font-size: 12px;">+ Yeni</button>
+                </div>
+                <div id="invoice-list" class="invoice-list-container">
+                    <p style="text-align:center; padding: 20px; font-size:13px; color:#94a3b8;">Yükleniyor...</p>
+                </div>
+            </div>
+
+            <div class="editor-area" id="invoice-editor">
+                <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                    <div><span id="save-status" style="color: #10b981; font-weight: 600; font-size: 14px;"></span></div>
+                    <div>
+                        <button class="btn btn-dark" id="btnPdf">📄 PDF</button>
+                        <button class="btn btn-green" id="btnExcel">📊 Excel</button>
+                        <button class="btn btn-blue" id="btnSave">💾 Kaydet</button>
+                        <button class="btn btn-red hidden" id="btnDelete">🗑 Sil</button>
+                    </div>
+                </div>
+
+                <div id="invoice-content">
+                    <div class="invoice-header">
+                        <img src="https://i.imgur.com/lDPzvsB.png" class="logo-img" crossorigin="anonymous">
+                        <div style="text-align: right;">
+                            <select id="doc-type" style="font-weight: 600; padding: 6px; margin-bottom: 8px; border-color: #94a3b8;">
+                                <option value="COMMERCIAL INVOICE">COMMERCIAL INVOICE</option>
+                                <option value="PROFORMA INVOICE">PROFORMA INVOICE</option>
+                            </select>
+                            <h1 id="doc-title-view" style="margin: 0; font-size: 24px; color: #0f172a;">COMMERCIAL INVOICE</h1>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+                        <div>
+                            <h4 style="color: #c0392b; font-size: 12px; margin-bottom: 8px; font-weight: 700;">BUYER (IMPORTER)</h4>
+                            <textarea id="buyer" class="editable-area" placeholder="Alıcı bilgilerini giriniz...">Customer Name...</textarea>
+                        </div>
+                        <div>
+                            <h4 style="color: #c0392b; font-size: 12px; margin-bottom: 8px; font-weight: 700;">SELLER (EXPORTER)</h4>
+                            <textarea id="seller" class="editable-area">FON KOZMETIK SAN. VE TIC. LTD. STI.
+Ornek Mah. No:1/A Istanbul/TURKEY
+Phone: +90 212 XXX XX XX
+Email: info@fonkozmetik.com</textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #f8fafc; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+                        <div>
+                            <p style="margin: 5px 0; font-size: 13px;"><strong>INVOICE NO:</strong> <input type="text" id="inv-no" style="width: 120px;"></p>
+                            <p style="margin: 5px 0; font-size: 13px;"><strong>DATE:</strong> <input type="date" id="inv-date"></p>
+                        </div>
+                        <div>
+                            <p style="margin: 5px 0; font-size: 13px;"><strong>DELIVERY:</strong> <input type="text" id="inv-delivery" value="EXW - ISTANBUL"></p>
+                            <p style="margin: 5px 0; font-size: 13px;"><strong>PAYMENT:</strong> <input type="text" id="inv-payment" value="100% Advance"></p>
+                        </div>
+                        <div>
+                            <p style="margin: 5px 0; font-size: 13px;"><strong>CURRENCY:</strong> 
+                                <select id="currency">
+                                    <option value="USD">USD ($)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="TRY">TRY (₺)</option>
+                                </select>
+                            </p>
+                            <p style="margin: 5px 0; font-size: 13px;"><strong>ORIGIN:</strong> TURKEY</p>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="5%" style="text-align: center;">#</th>
+                                <th width="45%">DESCRIPTION OF GOODS</th>
+                                <th width="10%" style="text-align: center;">QTY</th>
+                                <th width="10%" style="text-align: center;">UNIT</th>
+                                <th width="15%" align="right">UNIT PRICE</th>
+                                <th width="15%" align="right">TOTAL</th>
+                                <th width="5%" class="no-print"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody"></tbody>
+                    </table>
+                    <button id="btnAddRow" class="no-print" style="margin-top: 15px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">+ Satır Ekle</button>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
+                        <div style="width: 300px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px;">
+                                <span style="color: #64748b;">Total Quantity:</span> 
+                                <span id="total-qty" style="font-weight: 600;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: #0f172a; border-top: 2px solid #cbd5e1; padding-top: 10px;">
+                                <span>GRAND TOTAL:</span> 
+                                <span><span id="grand-total">0.00</span> <span id="curr-label">USD</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer-grid">
+                        <div>
+                            <div style="margin-top: 10px;">
+                                <p style="margin: 5px 0;"><strong>DESTINATION:</strong> <input type="text" id="inv-dest" value="CITY / COUNTRY" style="width: 150px;"></p>
+                                <p style="margin: 5px 0;"><strong>MANUFACTURER:</strong> FON KOZMETIK</p>
+                                
+                                <div style="margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 10px;">
+                                    <p style="margin-bottom: 5px; font-size: 12px; font-weight: bold;">HS CODES (GTIP):</p>
+                                    <textarea id="inv-hs" class="editable-area" style="height: 50px; min-height: 50px;" placeholder="Opsiyonel - Boş bırakırsanız gizlenir...">3305.XX.XX</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bank-area">
+                            <h4 id="bank-title">BANK DETAILS (USD ACCOUNT)</h4>
+                            <textarea id="inv-bank" spellcheck="false">BANK NAME : TC. VAKIFBANK
+BENEFICIARY : FON KOZMETİK SAN.VE TİC.LTD.ŞTİ.
+IBAN : TR81 0001 5001 5804 8020 9710 65
+SWIFT : TVBATR2A
+BRANCH : SILIVRI</textarea>
+                        </div>
+                    </div>
+                   
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <div class="signature-line"></div>
+                            <strong>FON KOZMETIK</strong><br>
+                            <span style="font-size: 11px; color: #777;">Authorized Signature & Stamp</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, where, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDhbMUeC56srZ3haOQ1VIdl828mvWpGVUM",
+            authDomain: "foninvoice.firebaseapp.com",
+            projectId: "foninvoice",
+            storageBucket: "foninvoice.firebasestorage.app",
+            messagingSenderId: "767110763012",
+            appId: "1:767110763012:web:fef9fb871be06cd76b9b51"
+        };
+
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("FonInvoice Sistemine Bağlandı.");
+        } catch (e) {
+            console.error("Firebase Ayarları Hatalı", e);
+            document.getElementById('login-msg').textContent = "Sistem Hatası: Bağlantı kurulamadı.";
+        }
+
+        let currentUser = null;
+        let currentInvoiceId = null;
+
+        // BANKA BİLGİLERİ ŞABLONLARI
+        const bankData = {
+            "USD": { title: "BANK DETAILS (USD ACCOUNT)", content: "BANK NAME : TC. VAKIFBANK\nBENEFICIARY : FON KOZMETİK SAN.VE TİC.LTD.ŞTİ.\nIBAN (USD) : TR81 0001 5001 5804 8020 9710 65\nSWIFT CODE : TVBATR2A\nBRANCH : SILIVRI" },
+            "EUR": { title: "BANK DETAILS (EUR ACCOUNT)", content: "BANK NAME : TC. VAKIFBANK\nBENEFICIARY : FON KOZMETİK SAN.VE TİC.LTD.ŞTİ.\nIBAN (EUR) : TR49 0001 5001 5804 8020 9710 59\nSWIFT CODE : TVBATR2A\nBRANCH : SILIVRI" },
+            "TRY": { title: "BANK DETAILS (TRY ACCOUNT)", content: "BANK NAME : TC. VAKIFBANK\nBENEFICIARY : FON KOZMETİK SAN.VE TİC.LTD.ŞTİ.\nIBAN (TRY) : TRXX XXXX XXXX XXXX XXXX XX\nSWIFT CODE : TVBATR2A" }
+        };
+
+        const loginScreen = document.getElementById('login-screen');
+        const dashboard = document.getElementById('dashboard');
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+        const loginMsg = document.getElementById('login-msg');
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loginScreen.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                document.getElementById('user-display').textContent = user.email;
+                loadInvoices();
+            } else {
+                currentUser = null;
+                loginScreen.classList.remove('hidden');
+                dashboard.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btnLogin').addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passInput.value;
+            loginMsg.textContent = "Giriş yapılıyor...";
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    loginMsg.textContent = "Hatalı e-posta veya şifre.";
+                });
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        function loadInvoices() {
+            const listContainer = document.getElementById('invoice-list');
+            const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                listContainer.innerHTML = "";
+                if(snapshot.empty) {
+                    listContainer.innerHTML = '<p style="text-align:center; padding:20px; font-size:12px; color:#94a3b8;">Henüz fatura yok.</p>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const div = document.createElement('div');
+                    div.className = 'invoice-item';
+                    
+                    let buyerName = data.buyer ? data.buyer.split('\n')[0] : 'İsimsiz';
+                    if(buyerName.length > 25) buyerName = buyerName.substring(0, 25) + '...';
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4 style="color:#0f172a;">${data.invoiceNo}</h4>
+                            <span style="font-size:10px; background:#f1f5f9; padding:2px 5px; border-radius:3px; color:#64748b;">${data.date}</span>
+                        </div>
+                        <p>${buyerName}</p>
+                        <p style="font-size:10px; margin-top:3px; color:#cbd5e1;">${data.createdBy}</p>
+                    `;
+                    div.addEventListener('click', () => loadInvoiceToEditor(doc.id, data));
+                    listContainer.appendChild(div);
+                });
+            });
+        }
+
+        // EDİTÖRE YÜKLE (GÜNCELLENDİ: Footer bilgileri dahil edildi)
+        function loadInvoiceToEditor(id, data) {
+            currentInvoiceId = id;
+            document.getElementById('btnDelete').classList.remove('hidden');
+            
+            document.getElementById('doc-type').value = data.type || "COMMERCIAL INVOICE";
+            document.getElementById('doc-title-view').textContent = data.type || "COMMERCIAL INVOICE";
+            document.getElementById('buyer').value = data.buyer || "";
+            document.getElementById('seller').value = data.seller || "";
+            document.getElementById('inv-no').value = data.invoiceNo || "";
+            document.getElementById('inv-date').value = data.date || "";
+            document.getElementById('inv-delivery').value = data.delivery || "";
+            document.getElementById('inv-payment').value = data.payment || "";
+            document.getElementById('currency').value = data.currency || "USD";
+            
+            // Yeni Eklenen Alanları Yükle
+            document.getElementById('inv-dest').value = data.destination || "CITY / COUNTRY";
+            document.getElementById('inv-hs').value = data.hsCode || "3305.XX.XX";
+            document.getElementById('inv-bank').value = data.bank || bankData[data.currency || "USD"].content;
+            document.getElementById('bank-title').textContent = bankData[data.currency || "USD"].title;
+
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = "";
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => addRowToTable(item));
+            } else {
+                addRowToTable();
+            }
+            calculateTotals();
+        }
+
+        // YENİ FATURA
+        document.getElementById('btnNewInvoice').addEventListener('click', () => {
+            currentInvoiceId = null;
+            document.getElementById('btnDelete').classList.add('hidden');
+            document.getElementById('inv-no').value = "FON2025" + Math.floor(Math.random() * 10000);
+            document.getElementById('buyer').value = "";
+            document.getElementById('tbody').innerHTML = "";
+            document.getElementById('save-status').textContent = "";
+            
+            // Varsayılan Banka Bilgilerini Getir
+            const curr = document.getElementById('currency').value;
+            document.getElementById('inv-bank').value = bankData[curr].content;
+            document.getElementById('bank-title').textContent = bankData[curr].title;
+            
+            addRowToTable();
+            addRowToTable();
+            calculateTotals();
+        });
+
+        // KAYDET (GÜNCELLENDİ: Footer bilgileri eklendi)
+        document.getElementById('btnSave').addEventListener('click', async () => {
+            if (!currentUser) return;
+            const btn = document.getElementById('btnSave');
+            btn.textContent = "Kaydediliyor...";
+            btn.disabled = true;
+
+            const invoiceData = {
+                type: document.getElementById('doc-type').value,
+                buyer: document.getElementById('buyer').value,
+                seller: document.getElementById('seller').value,
+                invoiceNo: document.getElementById('inv-no').value,
+                date: document.getElementById('inv-date').value,
+                delivery: document.getElementById('inv-delivery').value,
+                payment: document.getElementById('inv-payment').value,
+                currency: document.getElementById('currency').value,
+                // Footer Verileri
+                destination: document.getElementById('inv-dest').value,
+                hsCode: document.getElementById('inv-hs').value,
+                bank: document.getElementById('inv-bank').value,
+                
+                createdAt: new Date().toISOString(),
+                createdBy: currentUser.email,
+                items: getTableData()
+            };
+
+            try {
+                if (currentInvoiceId) {
+                    await updateDoc(doc(db, "invoices", currentInvoiceId), invoiceData);
+                } else {
+                    const docRef = await addDoc(collection(db, "invoices"), invoiceData);
+                    currentInvoiceId = docRef.id;
+                    document.getElementById('btnDelete').classList.remove('hidden');
+                }
+                document.getElementById('save-status').textContent = "✔ Son Kayıt: " + new Date().toLocaleTimeString();
+            } catch (e) {
+                alert("Hata: " + e.message);
+            } finally {
+                btn.textContent = "💾 Kaydet";
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('btnDelete').addEventListener('click', async () => {
+            if (confirm("Bu faturayı kalıcı olarak silmek istiyor musunuz?")) {
+                await deleteDoc(doc(db, "invoices", currentInvoiceId));
+                document.getElementById('btnNewInvoice').click();
+            }
+        });
+
+        function addRowToTable(data = {desc:'', qty:0, unit:'PCS', price:0}) {
+            const tbody = document.getElementById('tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td align="center">${tbody.rows.length + 1}</td>
+                <td><input type="text" class="table-input desc" value="${data.desc}" placeholder="Ürün adı..."></td>
+                <td><input type="number" class="table-input qty" value="${data.qty}" style="text-align:center"></td>
+                <td><input type="text" class="table-input unit" value="${data.unit}" style="text-align:center"></td>
+                <td><input type="number" class="table-input price" value="${data.price}" style="text-align:right"></td>
+                <td class="total-cell" align="right" style="font-weight:600">0.00</td>
+                <td class="no-print"><span class="btn-del-row" style="color:#ef4444; cursor:pointer; font-weight:bold;">&times;</span></td>
+            `;
+            
+            row.querySelectorAll('input').forEach(input => input.addEventListener('input', calculateTotals));
+            row.querySelector('.btn-del-row').addEventListener('click', () => { row.remove(); calculateTotals(); });
+            tbody.appendChild(row);
+        }
+
+        function getTableData() {
+            const data = [];
+            document.querySelectorAll('#tbody tr').forEach(row => {
+                data.push({
+                    desc: row.querySelector('.desc').value,
+                    qty: Number(row.querySelector('.qty').value),
+                    unit: row.querySelector('.unit').value,
+                    price: Number(row.querySelector('.price').value)
+                });
+            });
+            return data;
+        }
+
+        function calculateTotals() {
+            let grandTotal = 0;
+            let totalQty = 0;
+            const rows = document.querySelectorAll('#tbody tr');
+            
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const total = qty * price;
+                
+                row.querySelector('.total-cell').textContent = total.toFixed(2);
+                grandTotal += total;
+                totalQty += qty;
+            });
+
+            document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+            document.getElementById('total-qty').textContent = totalQty;
+            document.getElementById('curr-label').textContent = document.getElementById('currency').value;
+        }
+
+        document.getElementById('btnAddRow').addEventListener('click', () => addRowToTable());
+        
+        document.getElementById('doc-type').addEventListener('change', (e) => {
+            document.getElementById('doc-title-view').textContent = e.target.value;
+        });
+
+        // PARA BİRİMİ DEĞİŞİNCE BANKA BİLGİSİNİ GÜNCELLE
+        document.getElementById('currency').addEventListener('change', (e) => {
+            calculateTotals();
+            const curr = e.target.value;
+            if(bankData[curr]) {
+                document.getElementById('bank-title').textContent = bankData[curr].title;
+                // Sadece kullanıcı henüz elle bir şey yazmadıysa otomatik değiştir (İsteğe bağlı)
+                document.getElementById('inv-bank').value = bankData[curr].content;
+            }
+        });
+
+        // PDF EXPORT
+        document.getElementById('btnPdf').addEventListener('click', async () => {
+            const element = document.getElementById('invoice-content');
+            const no = document.getElementById('inv-no').value;
+            
+            // HS Code boşsa gizle
+            const hsInput = document.getElementById('inv-hs');
+            const hsParent = hsInput.parentElement;
+            let hsHidden = false;
+            if(!hsInput.value.trim() || hsInput.value === "3305.XX.XX") {
+                 if(!hsInput.value.trim()) { hsParent.style.display = 'none'; hsHidden = true; }
+            }
+
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const w = pdf.internal.pageSize.getWidth();
+                const h = (canvas.height * w) / canvas.width;
+                pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+                pdf.save(`FonInvoice_${no}.pdf`);
+            } catch(e) { alert("PDF Hatası: " + e.message); }
+            
+            if(hsHidden) hsParent.style.display = 'block';
+        });
+
+        // EXCEL EXPORT
+        document.getElementById('btnExcel').addEventListener('click', () => {
+            const no = document.getElementById('inv-no').value;
+            const data = [["NO", "DESCRIPTION", "QTY", "UNIT", "PRICE", "TOTAL"]];
+            getTableData().forEach((item, i) => {
+                data.push([i+1, item.desc, item.qty, item.unit, item.price, (item.qty*item.price).toFixed(2)]);
+            });
+            // Footer detayları Excel'e de eklenebilir ama şimdilik tablo yeterli
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Fatura");
+            XLSX.writeFile(wb, `FonInvoice_${no}.xlsx`);
+        });
+
+    </script>
+</body>
+</html>
