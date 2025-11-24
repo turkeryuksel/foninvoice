@@ -612,30 +612,78 @@
             }
         }
 
+        // --- GÜNCELLENMİŞ FATURA LİSTELEME FONKSİYONU ---
         function getInvoices() {
             const listDiv = document.getElementById('invoice-list-area');
-            listDiv.innerHTML = 'Yükleniyor...';
-            let query = db.collection('invoices').orderBy('createdAt', 'desc');
-            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) query = query.where('createdBy', '==', auth.currentUser.email);
+            listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Faturalar Yükleniyor...</div>';
+            
+            let query = db.collection('invoices');
+
+            // Kullanıcı admin DEĞİLSE, sadece kendi faturalarını filtrele
+            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
+                query = query.where('createdBy', '==', auth.currentUser.email);
+            }
+
+            // Faturaları tarihe göre (yeniden eskiye) sırala
+            query = query.orderBy('createdAt', 'desc');
             
             query.get().then(snap => {
                 listDiv.innerHTML = '';
                 
-                // HAFIZA
+                // HAFIZA SIFIRLAMA
                 customerDB = {}; productDB = {};
+
+                if (snap.empty) {
+                    listDiv.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Görüntülenecek fatura bulunamadı.</p>';
+                    return;
+                }
 
                 snap.forEach(doc => {
                     const d = doc.data();
+                    
+                    // Oto tamamlama verilerini doldur
                     if(d.importer && !customerDB[d.importer]) customerDB[d.importer] = { addr: d.address, tel: d.tel };
                     if(d.items) d.items.forEach(it => { if(!productDB[it.name]) productDB[it.name] = { code: it.code, price: it.price }; });
 
                     const el = document.createElement('div');
                     el.className = 'invoice-item';
-                    el.innerHTML = `<div><span class="inv-badge">${d.currency}</span><strong>${d.importer}</strong><br><span style="font-size:11px;color:#aaa;">${d.no} | ${d.date}</span></div>`;
+                    
+                    // LİSTE GÖRÜNÜMÜNÜ GÜNCELLEDİK: KİMİN EKLEDİĞİ ARTIK YAZIYOR
+                    el.innerHTML = `
+                        <div style="width:100%;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <span class="inv-badge">${d.currency}</span>
+                                    <strong style="font-size:13px;">${d.importer}</strong>
+                                </div>
+                                <div style="font-weight:700; font-size:12px;">${d.no}</div>
+                            </div>
+                            
+                            <div style="margin-top:4px; display:flex; justify-content:space-between; color:#7e8299; font-size:11px;">
+                                <span>${d.date}</span>
+                                <span style="font-style:italic; color:#3699ff;">
+                                    <i class="fas fa-user" style="font-size:10px;"></i> ${d.createdBy}
+                                </span>
+                            </div>
+                        </div>
+                    `;
                     el.onclick = () => loadInvoice(doc.id, d);
                     listDiv.appendChild(el);
                 });
                 updateDatalists();
+            })
+            // HATA YAKALAMA EKLENDİ (ÖZELLİKLE INDEX HATASI İÇİN)
+            .catch(error => {
+                console.error("Hata:", error);
+                listDiv.innerHTML = `
+                    <div style="color:#f64e60; background:#ffe2e5; padding:15px; border-radius:8px; font-size:12px; margin-top:10px;">
+                        <strong>Veriler Çekilemedi!</strong><br>
+                        ${error.message}<br><br>
+                        ${error.message.includes('index') 
+                            ? '<strong>DİKKAT (ÇÖZÜM):</strong> Veritabanı "Index" hatası veriyor. Lütfen tarayıcı konsolunu (F12) açın ve oradaki Firebase linkine tıklayarak indeksi oluşturun.' 
+                            : 'İnternet bağlantınızı kontrol edin.'}
+                    </div>
+                `;
             });
         }
 
