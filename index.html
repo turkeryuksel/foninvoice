@@ -69,31 +69,24 @@
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
 
-        /* PREVIEW (A4 COMPACT & STICKY FOOTER) */
+        /* PREVIEW (A4 COMPACT MODE) */
         .preview-panel { flex: 1; background: #555; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 30px; }
         .page { 
             width: 210mm; 
-            height: 297mm; /* SABİT YÜKSEKLİK (ÖNEMLİ) */
+            height: 297mm; 
             background: white; 
             padding: 10mm; 
             box-shadow: 0 0 30px rgba(0,0,0,0.3); 
             color: #000; 
             position: relative; 
             display: flex; 
-            flex-direction: column; /* DİKEY DİZİLİM */
-            justify-content: space-between; /* İÇERİĞİ YAY */
+            flex-direction: column; 
             margin-bottom: 20px; 
             page-break-after: always;
-            overflow: hidden;
+            overflow: hidden; 
         }
 
-        /* INVOICE CONTENT */
-        .top-content {
-            flex-grow: 1; /* Üst kısım genişlesin */
-            display: flex;
-            flex-direction: column;
-        }
-
+        /* INVOICE ELEMENTS */
         .inv-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px; flex-shrink: 0; }
         .logo-box { width: 180px; height: 70px; display: flex; align-items: center; }
         .logo-box img { width: 100%; height: 100%; object-fit: contain; }
@@ -113,9 +106,9 @@
         .tbl th { background: #eee; border: 1px solid #000; padding: 3px; font-weight: 700; }
         .tbl td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; height: 18px; }
 
-        /* FOOTER (STICKY BOTTOM) */
+        /* FOOTER WRAPPER (STICKY) */
         .footer-wrapper { 
-            margin-top: auto; /* EN ALTA İTER */
+            margin-top: auto; 
             padding-top: 10px;
             flex-shrink: 0;
             page-break-inside: avoid; 
@@ -182,7 +175,7 @@
     <div class="main">
         <div class="header-bar">
             <div style="font-weight:600;">Fatura Yönetim Paneli</div>
-            <div style="font-size:12px; color:#aaa;">v9.1 Final</div>
+            <div style="font-size:12px; color:#aaa;">v9.2 Pro</div>
         </div>
 
         <div class="content-area">
@@ -385,6 +378,8 @@
             if(!name) return alert("Ürün adı giriniz");
             items.push({ name, code, qty, price });
             renderPages();
+            
+            // --- KUTULARI TEMİZLEME KODU ---
             document.getElementById('p-name').value = '';
             document.getElementById('p-code').value = '';
             document.getElementById('p-qty').value = '';
@@ -449,13 +444,12 @@
                         </table>
                     </div>
                 </div>
-                <div class="top-content">
                 <table class="tbl" style="margin-top:5px;">
                     <thead><tr><th style="width:5%">No</th><th style="width:45%">Description</th><th style="width:15%">Code</th><th style="width:10%">Qty</th><th style="width:10%">Price</th><th style="width:15%">Total</th></tr></thead>
                     <tbody>
             `;
 
-            // FOOTER (STICKY BOTTOM)
+            // FOOTER
             const getFooterHTML = (gTot, tUnit) => `
                     </tbody></table></div>
                     <div class="footer-wrapper">
@@ -490,7 +484,7 @@
             let pageContent = headerHTML; 
             let rowsHTML = '';
             let itemCount = 0, grandTotal = 0, totalUnits = 0;
-            const LIMIT_FIRST = 19; // Reduced to accommodate footer
+            const LIMIT_FIRST = 19; 
             const LIMIT_OTHER = 24; 
             let currentLimit = LIMIT_FIRST;
             let pageIndex = 1;
@@ -502,10 +496,7 @@
                 itemCount++;
                 if (itemCount >= currentLimit) {
                     let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length/LIMIT_OTHER)}</div>` : '';
-                    
-                    // Close Page with NO FOOTER (Just empty div space filler if needed)
                     currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + `</tbody></table></div>`;
-                    
                     currentPage = document.createElement('div'); currentPage.className = 'page';
                     container.appendChild(currentPage);
                     pageIndex++;
@@ -629,12 +620,14 @@
             listDiv.innerHTML = 'Yükleniyor...';
             let query = db.collection('invoices').orderBy('createdAt', 'desc');
             if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) query = query.where('createdBy', '==', auth.currentUser.email);
+            
             query.get().then(snap => {
                 listDiv.innerHTML = '';
                 
-                // REFRESH MEMORY
-                customerDB = {}; productDB = {};
-
+                // HAFIZA DOLDURMA (OTO TAMAMLAMA)
+                customerDB = {};
+                productDB = {};
+                
                 snap.forEach(doc => {
                     const d = doc.data();
                     if(d.importer && !customerDB[d.importer]) customerDB[d.importer] = { addr: d.address, tel: d.tel };
