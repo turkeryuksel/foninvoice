@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fon Cosmetics - Pro Panel</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,45 +24,53 @@
             --bg-body: #eef0f8;
             --text-dark: #181c32;
         }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; outline: none; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; color: var(--text-dark); }
 
+        /* SCROLLBAR GÜZELLEŞTİRME */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
         /* LOGIN */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #131313; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: white; padding: 40px; border-radius: 12px; width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #131313; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         .inp-log { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #e4e6ef; border-radius: 6px; background: #f5f8fa; font-weight: 500; }
         .btn-log { width: 100%; padding: 12px; background: var(--sidebar-active); color: white; border: none; font-weight: 600; border-radius: 6px; cursor: pointer; transition: 0.3s; }
 
         /* SIDEBAR */
-        .sidebar { width: 280px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
-        .brand { height: 80px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #151521; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 100; }
+        .brand { height: 60px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #151521; }
         .brand-logo-wrapper { background: white; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-        .brand img { max-height: 40px; max-width: 100%; display: block; }
+        .brand img { max-height: 30px; max-width: 100%; display: block; }
         
         .user-profile { padding: 15px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .u-email { color: #fff; font-size: 12px; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; }
         .u-role { font-size: 10px; color: #5f6279; font-weight: 500; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .u-role.admin { color: #f64e60; }
         .menu { list-style: none; padding: 15px 0; margin: 0; }
-        .menu li { padding: 10px 25px; cursor: pointer; color: var(--sidebar-text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .menu li { padding: 12px 25px; cursor: pointer; color: var(--sidebar-text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .menu li:hover, .menu li.active { color: #fff; background: rgba(255,255,255,0.03); border-right: 3px solid var(--sidebar-active); }
         .admin-only { display: none; }
 
         /* MAIN */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .header-bar { height: 50px; background: #fff; border-bottom: 1px solid #e4e6ef; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .header-bar { height: 60px; background: #fff; border-bottom: 1px solid #e4e6ef; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+        .menu-btn { display: none; font-size: 20px; cursor: pointer; color: #333; margin-right: 15px; }
         .content-area { flex: 1; overflow: hidden; padding: 15px; position: relative; }
-        .view { display: none; width: 100%; height: 100%; }
+        .view { display: none; width: 100%; height: 100%; flex-direction: column; }
         .view.active { display: flex; }
 
         /* EDITOR */
-        .editor-container { display: flex; width: 100%; height: 100%; gap: 20px; }
-        .form-panel { width: 340px; background: white; border-radius: 8px; overflow-y: auto; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 10px; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid #e4e6ef; border-radius: 4px; font-size: 11px; background: #f5f8fa; color: #3f4254; }
-        .form-control:focus { background: #fff; border-color: var(--sidebar-active); outline: none; }
-        .grp-label { font-size: 10px; font-weight: 700; color: #181c32; margin-bottom: 2px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .editor-container { display: flex; width: 100%; height: 100%; gap: 20px; overflow: hidden; }
+        .form-panel { width: 350px; background: white; border-radius: 8px; overflow-y: auto; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #e4e6ef; border-radius: 4px; font-size: 12px; background: #f5f8fa; color: #3f4254; transition: 0.2s; }
+        .form-control:focus { background: #fff; border-color: var(--sidebar-active); }
+        .grp-label { font-size: 10px; font-weight: 800; color: #181c32; margin-bottom: 2px; display: block; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
         
-        .btn { padding: 8px; border-radius: 4px; border: none; font-weight: 600; font-size: 11px; cursor: pointer; color: white; width: 100%; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .btn { padding: 10px; border-radius: 6px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; color: white; width: 100%; display: flex; justify-content: center; align-items: center; gap: 5px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--sidebar-active); }
         .btn-success { background: #1bc5bd; }
         .btn-danger { background: #f64e60; }
@@ -72,47 +80,27 @@
         /* PREVIEW (A4 COMPACT MODE) */
         .preview-panel { flex: 1; background: #555; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 30px; }
         .page { 
-            width: 210mm; 
-            height: 297mm; 
-            background: white; 
-            padding: 10mm; 
-            box-shadow: 0 0 30px rgba(0,0,0,0.3); 
-            color: #000; 
-            position: relative; 
-            display: flex; 
-            flex-direction: column; 
-            margin-bottom: 20px; 
-            page-break-after: always;
-            overflow: hidden; 
+            width: 210mm; height: 297mm; min-width: 210mm; min-height: 297mm;
+            background: white; padding: 10mm; box-shadow: 0 0 30px rgba(0,0,0,0.3); 
+            color: #000; position: relative; display: flex; flex-direction: column; 
+            margin-bottom: 20px; overflow: hidden; transform-origin: top center;
         }
 
-        /* INVOICE ELEMENTS */
+        /* INVOICE STYLING */
         .inv-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px; flex-shrink: 0; }
         .logo-box { width: 180px; height: 70px; display: flex; align-items: center; }
         .logo-box img { width: 100%; height: 100%; object-fit: contain; }
-        
         .exporter-info { text-align: right; font-size: 9px; color: #000; line-height: 1.3; }
         .exporter-info h1 { font-size: 14px; font-weight: 900; margin: 0 0 2px 0; text-transform: uppercase; }
-
         .inv-title { text-align: center; font-size: 18px; font-weight: 800; margin: 5px 0 2px 0; letter-spacing: 1px; text-decoration: underline; flex-shrink: 0; }
         .page-num { text-align: center; font-size: 9px; color: #666; margin-bottom: 5px; font-style: italic; flex-shrink: 0; }
-
         .info-grid { display: grid; grid-template-columns: 1.6fr 0.4fr; gap: 10px; margin-bottom: 5px; flex-shrink: 0; }
         .box { border: 1px solid #000; padding: 5px; font-size: 10px; position: relative; }
         .box-title { background: #eee; font-weight: 700; text-align: center; border-bottom: 1px solid #000; margin: -5px -5px 4px -5px; padding: 2px; font-size: 9px; }
-
-        /* TABLE */
         .tbl { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 0; }
         .tbl th { background: #eee; border: 1px solid #000; padding: 3px; font-weight: 700; }
         .tbl td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; height: 18px; }
-
-        .footer-wrapper { 
-            margin-top: auto; 
-            padding-top: 10px;
-            flex-shrink: 0;
-            page-break-inside: avoid;
-        }
-        
+        .footer-wrapper { margin-top: auto; padding-top: 10px; flex-shrink: 0; page-break-inside: avoid; }
         .ship-box { border: 2px solid #000; margin-top: 10px; margin-bottom: 5px; }
         .ship-head { background: #000; color: white; text-align: center; font-size: 9px; font-weight: 700; padding: 2px; }
         .ship-grid { display: grid; grid-template-columns: repeat(4, 1fr); font-size: 8px; }
@@ -120,25 +108,58 @@
         .scell:nth-child(4n) { border-right: none; }
         .slbl { font-weight: 700; color: #555; margin-bottom: 1px; font-size: 7px; }
         .sval { font-weight: 700; color: #000; font-size: 9px; }
-
         .footer { border-top: 2px solid #000; padding-top: 5px; display: flex; justify-content: space-between; font-size: 8px; }
         
-        .list-wrapper, .user-create-card { background: white; padding: 20px; border-radius: 8px; height: 100%; overflow-y: auto; }
-        .invoice-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 12px; }
-        .invoice-item:hover { background: #f9f9f9; }
+        /* LISTE GÖRÜNÜMÜ İYİLEŞTİRMELERİ */
+        .list-wrapper, .user-create-card { background: white; padding: 20px; border-radius: 8px; height: 100%; overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
+        .invoice-item { 
+            background: #fff; border: 1px solid #e4e6ef; border-radius: 8px; padding: 15px; margin-bottom: 10px; 
+            cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 8px;
+        }
+        .invoice-item:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: var(--sidebar-active); }
+        .inv-badge { 
+            background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 10px; padding: 4px 8px; border-radius: 4px; 
+            display: inline-block; min-width: 40px; text-align: center; margin-right: 8px;
+        }
+        .inv-row-top { display: flex; justify-content: space-between; align-items: center; }
+        .inv-customer { font-weight: 700; font-size: 14px; color: #181c32; }
+        .inv-number { font-weight: 600; font-size: 12px; color: #7e8299; background: #f5f8fa; padding: 2px 6px; border-radius: 4px; }
 
+        /* RESPONSIVE / MOBİL CSS */
+        @media (max-width: 900px) {
+            .sidebar { position: fixed; left: -280px; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+            .sidebar.active { transform: translateX(280px); left: 0; }
+            .menu-btn { display: block; }
+            .editor-container { flex-direction: column; overflow-y: auto; }
+            .form-panel { width: 100%; max-height: none; overflow: visible; box-shadow: none; border-bottom: 1px solid #eee; }
+            .preview-panel { min-height: 500px; padding: 10px; background: #333; }
+            .page { transform: scale(0.6); transform-origin: top left; margin-bottom: -100px; } /* Telefondan sayfayı sığdırmak için küçültme */
+            .header-bar { padding: 0 15px; }
+            /* Mobil Tablolar */
+            .info-grid { grid-template-columns: 1fr; }
+            .ship-grid { grid-template-columns: repeat(2, 1fr); }
+            .scell:nth-child(2n) { border-right: none; }
+            .scell:nth-child(4n) { border-right: 1px solid #999; }
+        }
+
+        /* PRINT */
         @media print {
             .sidebar, #login-screen, .header-bar, .form-panel { display: none !important; }
             .main, .view, .preview-panel { display: block !important; padding: 0 !important; background: white !important; height: auto !important; overflow: visible !important; }
-            .page { box-shadow: none; margin: 0; width: 100%; height: 297mm; page-break-after: always; }
+            .page { box-shadow: none; margin: 0; width: 100%; height: 297mm; page-break-after: always; transform: none !important; }
             .list-wrapper, .user-create-card { display: none; }
         }
+
+        /* Overlay for mobile menu */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; display: none; }
+        .overlay.active { display: block; }
     </style>
 </head>
 <body>
 
     <datalist id="dl-customers"></datalist>
     <datalist id="dl-products"></datalist>
+    <datalist id="dl-users"></datalist>
 
     <div id="login-screen">
         <div class="login-card">
@@ -153,7 +174,9 @@
         </div>
     </div>
 
-    <div class="sidebar">
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
         <div class="brand">
             <div class="brand-logo-wrapper">
                 <img src="https://i.hizliresim.com/bocqcmc.png" alt="FON LOGO" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO'">
@@ -164,17 +187,22 @@
             <span class="u-role" id="u-role">Kullanıcı</span>
         </div>
         <ul class="menu">
-            <li onclick="switchView('editor', this)" class="active"><i class="fas fa-file-invoice"></i> Fatura Oluştur</li>
-            <li onclick="switchView('list', this)"><i class="fas fa-list"></i> Fatura Listesi</li>
-            <li onclick="switchView('users', this)" class="admin-only"><i class="fas fa-user-plus"></i> Kullanıcı Ekle</li>
+            <li onclick="switchView('editor', this); toggleSidebar()" class="active"><i class="fas fa-file-invoice"></i> Fatura Oluştur</li>
+            <li onclick="switchView('list', this); toggleSidebar()"><i class="fas fa-list"></i> Fatura Listesi</li>
+            <li onclick="switchView('users', this); toggleSidebar()" class="admin-only"><i class="fas fa-user-plus"></i> Kullanıcı Ekle</li>
             <li onclick="doLogout()" style="margin-top:auto; color:#f64e60;"><i class="fas fa-power-off"></i> Çıkış Yap</li>
         </ul>
     </div>
 
     <div class="main">
         <div class="header-bar">
-            <div style="font-weight:600;">Fatura Yönetim Paneli</div>
-            <div style="font-size:12px; color:#aaa;">v10.1 Pro</div>
+            <div style="display:flex; align-items:center;">
+                <i class="fas fa-bars menu-btn" onclick="toggleSidebar()"></i>
+                <div>
+                    <div style="font-weight:700;">Fatura Yönetim Paneli</div>
+                    <div style="font-size:11px; color:#aaa;">v10.3 Mobile</div>
+                </div>
+            </div>
         </div>
 
         <div class="content-area">
@@ -182,6 +210,12 @@
             <div id="view-editor" class="view active">
                 <div class="editor-container">
                     <div class="form-panel">
+                        
+                        <div id="admin-owner-wrapper" style="display:none; background:#ffe2e5; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #f64e60;">
+                            <span class="grp-label" style="color:#f64e60;">YÖNETİCİ: FATURA SAHİBİ</span>
+                            <input id="i-owner" class="form-control" list="dl-users" placeholder="kullanici@mail.com">
+                        </div>
+
                         <button class="btn btn-warning" onclick="resetForm()">Temizle / Yeni</button>
                         
                         <span class="grp-label">FATURA TİPİ & PARA BİRİMİ</span>
@@ -211,7 +245,7 @@
                             <div style="flex:1"><span class="grp-label">TARİH</span><input type="date" id="i-date" class="form-control" oninput="upd()"></div>
                         </div>
 
-                        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+                        <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
                         <span class="grp-label">ÜRÜN EKLE (OTO TAMAMLAMA)</span>
                         <input id="p-name" class="form-control" placeholder="Ürün Adı" list="dl-products">
                         <div style="display:flex; gap:5px; margin-top:5px;">
@@ -221,7 +255,7 @@
                         </div>
                         <button class="btn btn-primary" style="margin-top:5px;" onclick="addItem()">+ Listeye Ekle</button>
 
-                        <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
+                        <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
                         <span class="grp-label">LOJİSTİK</span>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
                             <input id="i-load" class="form-control" placeholder="Loading" oninput="upd()">
@@ -240,11 +274,13 @@
                             <textarea id="i-gtip" class="form-control" rows="2" placeholder="3303.00.90.00.11, 3923..." oninput="upd()"></textarea>
                         </div>
 
-                        <hr style="margin: 10px 0; border:0; border-top:1px solid #eee;">
+                        <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
                         
                         <button class="btn btn-success" onclick="saveInvoice()">KAYDET (CLOUD)</button>
-                        <button class="btn btn-excel" style="margin-top:5px;" onclick="exportToExcel()">EXCEL İNDİR</button>
-                        <button class="btn btn-primary" style="margin-top:5px; background:#181c32;" onclick="downloadPDF()">PDF İNDİR</button>
+                        <div style="display:flex; gap:5px; margin-top:5px;">
+                            <button class="btn btn-excel" onclick="exportToExcel()">EXCEL</button>
+                            <button class="btn btn-primary" style="background:#181c32;" onclick="downloadPDF()">PDF</button>
+                        </div>
                         <button class="btn btn-danger" style="margin-top:5px; display:none;" id="btn-del" onclick="deleteInvoice()">SİL</button>
                     </div>
 
@@ -293,6 +329,7 @@
         let currentId = null;
         let customerDB = {};
         let productDB = {};
+        let userSet = new Set();
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -301,10 +338,12 @@
                 if (user.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
                     document.getElementById('u-role').innerText = "YÖNETİCİ";
                     document.getElementById('u-role').classList.add('admin');
-                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex'); 
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+                    document.getElementById('admin-owner-wrapper').style.display = 'block';
                 } else {
                     document.getElementById('u-role').innerText = "Kullanıcı";
                     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none'); 
+                    document.getElementById('admin-owner-wrapper').style.display = 'none';
                 }
                 getInvoices();
                 renderPages();
@@ -313,6 +352,12 @@
                 document.getElementById('login-screen').style.display = 'flex';
             }
         });
+
+        // MOBİL MENÜ TOGGLE
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
 
         function doLogin() {
             const e = document.getElementById('log-email').value;
@@ -367,6 +412,8 @@
             Object.keys(customerDB).forEach(n => { const o = document.createElement('option'); o.value = n; dlCust.appendChild(o); });
             const dlProd = document.getElementById('dl-products'); dlProd.innerHTML = '';
             Object.keys(productDB).forEach(n => { const o = document.createElement('option'); o.value = n; dlProd.appendChild(o); });
+            const dlUsers = document.getElementById('dl-users'); dlUsers.innerHTML = '';
+            userSet.forEach(u => { const o = document.createElement('option'); o.value = u; dlUsers.appendChild(o); });
         }
 
         function addItem() {
@@ -385,7 +432,6 @@
         }
         function delItem(i) { items.splice(i, 1); renderPages(); }
 
-        // --- PAGINATION ENGINE ---
         function renderPages() {
             const container = document.getElementById('print-area');
             container.innerHTML = '';
@@ -414,7 +460,6 @@
             if(d.cur === 'EUR') iban = "TR49 0001 5001 5804 8020 9710 59";
             if(d.cur === 'TL') iban = "TR04 0001 5001 5800 7315 1460 36";
 
-            // REPEATABLE HEADER
             const headerHTML = `
                 <div class="inv-header">
                     <div class="logo-box"><img src="https://i.hizliresim.com/bocqcmc.png" onerror="this.src='https://via.placeholder.com/200x80?text=LOGO+YUKLE'"></div>
@@ -446,7 +491,6 @@
                     <tbody>
             `;
 
-            // FOOTER
             const getFooterHTML = (gTot, tUnit) => `
                     </tbody></table></div>
                     <div class="footer-wrapper">
@@ -506,7 +550,6 @@
             currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + getFooterHTML(grandTotal, totalUnits);
         }
 
-        // EXCEL EXPORT
         function exportToExcel() {
             const d = {
                 type: document.getElementById('i-type').value,
@@ -560,7 +603,6 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // PDF
         function downloadPDF() {
             const element = document.getElementById('print-area');
             const opt = {
@@ -574,16 +616,25 @@
             html2pdf().set(opt).from(element).save();
         }
 
-        // --- DB Functions ---
         function resetForm() {
             currentId = null;
             document.getElementById('btn-del').style.display = 'none';
             document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+            document.getElementById('i-owner').value = auth.currentUser.email; 
             items = []; renderPages();
             document.getElementById('i-date').valueAsDate = new Date();
         }
 
         function saveInvoice() {
+            let ownerEmail = auth.currentUser.email;
+
+            if (auth.currentUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+                const adminInput = document.getElementById('i-owner').value;
+                if(adminInput && adminInput.trim() !== "") {
+                    ownerEmail = adminInput.trim();
+                }
+            }
+
             const data = {
                 type: document.getElementById('i-type').value,
                 currency: document.getElementById('i-currency').value,
@@ -603,35 +654,31 @@
                 gtip: document.getElementById('i-gtip').value,
                 items: items,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: auth.currentUser.email
+                createdBy: ownerEmail 
             };
             if (currentId) {
-                db.collection('invoices').doc(currentId).update(data).then(() => alert("Güncellendi!")).catch(e => alert(e.message));
+                db.collection('invoices').doc(currentId).set(data, { merge: true }).then(() => alert("Güncellendi!")).catch(e => alert(e.message));
             } else {
                 db.collection('invoices').add(data).then(() => { alert("Kaydedildi!"); resetForm(); getInvoices(); }).catch(e => alert(e.message));
             }
         }
 
-        // --- GÜNCELLENMİŞ FATURA LİSTELEME FONKSİYONU ---
         function getInvoices() {
             const listDiv = document.getElementById('invoice-list-area');
             listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Faturalar Yükleniyor...</div>';
             
             let query = db.collection('invoices');
 
-            // Kullanıcı admin DEĞİLSE, sadece kendi faturalarını filtrele
             if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
                 query = query.where('createdBy', '==', auth.currentUser.email);
             }
 
-            // Faturaları tarihe göre (yeniden eskiye) sırala
             query = query.orderBy('createdAt', 'desc');
             
             query.get().then(snap => {
                 listDiv.innerHTML = '';
                 
-                // HAFIZA SIFIRLAMA
-                customerDB = {}; productDB = {};
+                customerDB = {}; productDB = {}; userSet = new Set();
 
                 if (snap.empty) {
                     listDiv.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Görüntülenecek fatura bulunamadı.</p>';
@@ -641,29 +688,29 @@
                 snap.forEach(doc => {
                     const d = doc.data();
                     
-                    // Oto tamamlama verilerini doldur
                     if(d.importer && !customerDB[d.importer]) customerDB[d.importer] = { addr: d.address, tel: d.tel };
                     if(d.items) d.items.forEach(it => { if(!productDB[it.name]) productDB[it.name] = { code: it.code, price: it.price }; });
+                    if(d.createdBy) userSet.add(d.createdBy);
 
                     const el = document.createElement('div');
                     el.className = 'invoice-item';
                     
-                    // LİSTE GÖRÜNÜMÜNÜ GÜNCELLEDİK: KİMİN EKLEDİĞİ ARTIK YAZIYOR
+                    // --- TASARIM GÜNCELLENDİ (YAPIŞIK GÖRÜNTÜ GİDERİLDİ) ---
                     el.innerHTML = `
-                        <div style="width:100%;">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <span class="inv-badge">${d.currency}</span>
-                                    <strong style="font-size:13px;">${d.importer}</strong>
-                                </div>
-                                <div style="font-weight:700; font-size:12px;">${d.no}</div>
+                        <div class="inv-row-top">
+                            <div style="display:flex; align-items:center; overflow:hidden;">
+                                <span class="inv-badge">${d.currency}</span>
+                                <span class="inv-customer">${d.importer}</span>
                             </div>
-                            
-                            <div style="margin-top:4px; display:flex; justify-content:space-between; color:#7e8299; font-size:11px;">
-                                <span>${d.date}</span>
-                                <span style="font-style:italic; color:#3699ff;">
-                                    <i class="fas fa-user" style="font-size:10px;"></i> ${d.createdBy}
-                                </span>
+                            <span class="inv-number">${d.no}</span>
+                        </div>
+                        
+                        <div style="margin-top:8px; display:flex; justify-content:space-between; color:#7e8299; font-size:11px;">
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <i class="far fa-calendar-alt"></i> ${d.date}
+                            </div>
+                            <div style="font-style:italic; color:#3699ff;">
+                                <i class="fas fa-user-circle" style="margin-right:3px;"></i>${d.createdBy}
                             </div>
                         </div>
                     `;
@@ -672,7 +719,6 @@
                 });
                 updateDatalists();
             })
-            // HATA YAKALAMA EKLENDİ (ÖZELLİKLE INDEX HATASI İÇİN)
             .catch(error => {
                 console.error("Hata:", error);
                 listDiv.innerHTML = `
@@ -680,7 +726,7 @@
                         <strong>Veriler Çekilemedi!</strong><br>
                         ${error.message}<br><br>
                         ${error.message.includes('index') 
-                            ? '<strong>DİKKAT (ÇÖZÜM):</strong> Veritabanı "Index" hatası veriyor. Lütfen tarayıcı konsolunu (F12) açın ve oradaki Firebase linkine tıklayarak indeksi oluşturun.' 
+                            ? '<strong>ÇÖZÜM:</strong> Veritabanı "Index" hatası. Lütfen konsolu (F12) açıp linke tıklayın.' 
                             : 'İnternet bağlantınızı kontrol edin.'}
                     </div>
                 `;
@@ -690,6 +736,11 @@
         function loadInvoice(id, d) {
             currentId = id;
             document.getElementById('btn-del').style.display = 'block';
+            
+            if(document.getElementById('i-owner')) {
+                document.getElementById('i-owner').value = d.createdBy || '';
+            }
+
             document.getElementById('i-type').value = d.type;
             document.getElementById('i-currency').value = d.currency;
             document.getElementById('i-imp').value = d.importer;
