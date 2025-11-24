@@ -106,15 +106,14 @@
         .tbl th { background: #eee; border: 1px solid #000; padding: 3px; font-weight: 700; }
         .tbl td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; height: 18px; }
 
-        /* FOOTER WRAPPER (STICKY) */
         .footer-wrapper { 
             margin-top: auto; 
             padding-top: 10px;
             flex-shrink: 0;
-            page-break-inside: avoid; 
+            page-break-inside: avoid;
         }
         
-        .ship-box { border: 2px solid #000; margin-top: 5px; margin-bottom: 5px; }
+        .ship-box { border: 2px solid #000; margin-top: 10px; margin-bottom: 5px; }
         .ship-head { background: #000; color: white; text-align: center; font-size: 9px; font-weight: 700; padding: 2px; }
         .ship-grid { display: grid; grid-template-columns: repeat(4, 1fr); font-size: 8px; }
         .scell { border-right: 1px solid #999; border-bottom: 1px solid #999; padding: 3px; height: 35px; display: flex; flex-direction: column; justify-content: center; }
@@ -162,7 +161,7 @@
         </div>
         <div class="user-profile">
             <span class="u-email" id="u-email">...</span>
-            <span class="u-role" id="u-role">Personel</span>
+            <span class="u-role" id="u-role">Kullanıcı</span>
         </div>
         <ul class="menu">
             <li onclick="switchView('editor', this)" class="active"><i class="fas fa-file-invoice"></i> Fatura Oluştur</li>
@@ -175,7 +174,7 @@
     <div class="main">
         <div class="header-bar">
             <div style="font-weight:600;">Fatura Yönetim Paneli</div>
-            <div style="font-size:12px; color:#aaa;">v9.2 Pro</div>
+            <div style="font-size:12px; color:#aaa;">v10.1 Pro</div>
         </div>
 
         <div class="content-area">
@@ -262,8 +261,8 @@
 
             <div id="view-users" class="view">
                 <div class="user-create-card">
-                    <h3>Personel Ekle</h3>
-                    <p style="font-size:12px; color:#666;">Personel sadece kendi işlemini görür.</p>
+                    <h3>Kullanıcı Ekle</h3>
+                    <p style="font-size:12px; color:#666;">Kullanıcı sadece kendi işlemini görür.</p>
                     <input id="new-email" class="form-control" placeholder="E-posta" style="margin-bottom:10px;">
                     <input id="new-pass" class="form-control" placeholder="Şifre" type="password" style="margin-bottom:15px;">
                     <button class="btn btn-success" onclick="createUser()">OLUŞTUR</button>
@@ -304,7 +303,7 @@
                     document.getElementById('u-role').classList.add('admin');
                     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex'); 
                 } else {
-                    document.getElementById('u-role').innerText = "Personel";
+                    document.getElementById('u-role').innerText = "Kullanıcı";
                     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none'); 
                 }
                 getInvoices();
@@ -378,8 +377,6 @@
             if(!name) return alert("Ürün adı giriniz");
             items.push({ name, code, qty, price });
             renderPages();
-            
-            // --- KUTULARI TEMİZLEME KODU ---
             document.getElementById('p-name').value = '';
             document.getElementById('p-code').value = '';
             document.getElementById('p-qty').value = '';
@@ -624,10 +621,9 @@
             query.get().then(snap => {
                 listDiv.innerHTML = '';
                 
-                // HAFIZA DOLDURMA (OTO TAMAMLAMA)
-                customerDB = {};
-                productDB = {};
-                
+                // HAFIZA
+                customerDB = {}; productDB = {};
+
                 snap.forEach(doc => {
                     const d = doc.data();
                     if(d.importer && !customerDB[d.importer]) customerDB[d.importer] = { addr: d.address, tel: d.tel };
