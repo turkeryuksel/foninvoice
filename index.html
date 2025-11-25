@@ -168,50 +168,6 @@
                 margin-bottom: -140mm;
             }
         }
-
-        /* --- PDF OLUŞTURMA MODU (SİHİRLİ KISIM) --- */
-        /* Bu class body'ye eklendiğinde sayfa PDF için optimize olur */
-        body.generating-pdf .sidebar, 
-        body.generating-pdf .header-bar, 
-        body.generating-pdf .form-panel,
-        body.generating-pdf .menu-toggle { 
-            display: none !important; 
-        }
-        
-        body.generating-pdf .main { 
-            display: block; 
-            height: auto; 
-            overflow: visible; 
-            background: white;
-        }
-        
-        body.generating-pdf .content-area { 
-            padding: 0; 
-            overflow: visible;
-        }
-        
-        body.generating-pdf .editor-container { 
-            display: block; 
-            height: auto; 
-            overflow: visible;
-        }
-        
-        body.generating-pdf .preview-panel { 
-            background: white; 
-            padding: 0; 
-            display: block; 
-            overflow: visible;
-        }
-        
-        /* PDF oluşturulurken mobil küçültmeyi İPTAL ET */
-        body.generating-pdf .page { 
-            transform: none !important; 
-            margin: 0 !important; 
-            box-shadow: none;
-            margin-bottom: 0 !important;
-            page-break-after: always;
-        }
-
         @media print {
             .sidebar, .header-bar, .form-panel, .menu-toggle { display: none !important; }
             .main, .view, .preview-panel { display: block !important; padding: 0 !important; background: white !important; height: auto !important; overflow: visible !important; }
@@ -262,7 +218,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v11.4 Final Stable</div>
+                    <div style="font-size:11px; color:#aaa;">v11.5 Final Fix</div>
                 </div>
             </div>
         </div>
@@ -415,7 +371,6 @@
             }
         });
 
-        // MOBİL MENÜ
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
@@ -612,7 +567,22 @@
             
             let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length/LIMIT_OTHER)}</div>` : '';
             currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + getFooterHTML(grandTotal, totalUnits);
+
+            autoScalePages();
         }
+
+        function autoScalePages() {
+            if (window.innerWidth > 900) return;
+            const panelWidth = document.querySelector('.preview-panel').offsetWidth - 20;
+            const A4Width = 793;
+            const scale = panelWidth / A4Width;
+            
+            document.querySelectorAll('.page').forEach(page => {
+                page.style.transform = `scale(${scale})`;
+                page.style.marginBottom = `-${(1123 * (1 - scale))}px`;
+            });
+        }
+        window.addEventListener('resize', autoScalePages);
 
         function exportToExcel() {
             const d = {
@@ -628,13 +598,13 @@
             data.push(["Ortaköy Merkez Mah. Yeldeğirmeni Cad. No:17/A Silivri / İSTANBUL"]);
             data.push(["Tel: +90 212 734 38 20 | info@fonkozmetik.com"]);
             data.push(["Vergi: Silivri V.D. - 3880040480"]);
-            data.push([""]); 
-            data.push([d.type]); 
-            data.push([""]); 
-            data.push(["IMPORTER:", d.imp, "", "INVOICE NO:", d.no]); 
+            data.push([""]);
+            data.push([d.type]);
+            data.push([""]);
+            data.push(["IMPORTER:", d.imp, "", "INVOICE NO:", d.no]);
             data.push(["", d.addr, "", "DATE:", d.date]);
-            data.push(["", d.tel, "", "CONTRACT:", d.contr]); 
-            data.push([""]); 
+            data.push(["", d.tel, "", "CONTRACT:", d.contr]);
+            data.push([""]);
             data.push(["No", "Description", "Code", "Qty", "Unit Price", "Total"]);
             let grandTotal = 0;
             items.forEach((item, i) => {
@@ -659,67 +629,69 @@
             data.push(["Beneficiary:", "FON KOZMETİK SAN.VE TİC.LTD.ŞTİ."]);
             data.push(["IBAN:", iban]);
             data.push(["SWIFT:", "TVBATR2A"]);
-
             const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, 
-                { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }, 
-                { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } }, 
-                { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } }, 
-                { s: { r: 5, c: 0 }, e: { r: 5, c: 5 } }, 
-                { s: { r: 7, c: 1 }, e: { r: 7, c: 2 } }, 
-                { s: { r: 8, c: 1 }, e: { r: 8, c: 2 } }, 
-                { s: { r: 9, c: 1 }, e: { r: 9, c: 2 } }, 
-                { s: { r: totalRowIndex, c: 4 }, e: { r: totalRowIndex, c: 5 } } 
-            ];
-            ws['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 }];
-            for (let i = 0; i < items.length; i++) {
-                let priceRow = 12 + i;
-                ['E', 'F'].forEach(col => {
-                    let cell = col + priceRow;
-                    if (ws[cell]) ws[cell].z = '0.00'; 
-                });
-            }
-            let grandTotalCell = XLSX.utils.encode_cell({ r: totalRowIndex, c: 5 });
-            if (ws[grandTotalCell]) ws[grandTotalCell].z = '0.00';
-            
+            ws['!cols'] = [{wch:5}, {wch:40}, {wch:15}, {wch:10}, {wch:15}, {wch:15}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Invoice");
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- SİHİRLİ PDF İNDİRME FONKSİYONU (MOBİL + MASAÜSTÜ) ---
+        // --- KESİN ÇÖZÜM: GİZLİ CONTAINER + TEMİZ KLONLAMA ---
         function downloadPDF() {
-            // 1. Önce tüm sayfayı "Yazdırma Moduna" sokuyoruz
-            document.body.classList.add('generating-pdf');
+            const pages = document.querySelectorAll('.page');
+            if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // 2. Elementi seçiyoruz (Artık normal A4 boyutunda ve görünür)
-            const element = document.getElementById('print-area');
+            // 1. Gizli bir taşıyıcı oluştur (ekran dışı)
+            const container = document.createElement('div');
+            container.style.position = 'fixed'; 
+            container.style.top = '0';
+            container.style.left = '-10000px'; // Görünmeyecek kadar uzakta
+            container.style.width = '210mm'; // A4 genişliğini zorla
+            container.style.zIndex = '-1'; // En altta
+            document.body.appendChild(container);
 
-            const opt = {
-              margin: 0,
-              filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
-              image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                scrollY: 0
-              }, 
-              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-              pagebreak: { mode: 'css' }
-            };
+            // 2. Sayfaları temizleyerek klonla
+            pages.forEach(page => {
+                const clone = page.cloneNode(true);
+                // Mobildeki küçültme etkilerini (scale) temizle
+                clone.style.transform = 'none !important'; 
+                clone.style.margin = '0'; 
+                clone.style.marginBottom = '0'; // Sayfa sonu boşluklarını kaldır
+                clone.style.boxShadow = 'none'; 
+                
+                // Resimlerin genişliğini sabitle (taşmayı engelle)
+                const imgs = clone.querySelectorAll('img');
+                imgs.forEach(img => img.style.maxWidth = '100%');
 
-            // 3. PDF'i oluştur
-            html2pdf().set(opt).from(element).save()
-                .then(() => {
-                    // 4. İşlem bitince yazdırma modundan çık
-                    document.body.classList.remove('generating-pdf');
-                })
-                .catch(err => {
-                    console.error("PDF Hatası:", err);
-                    alert("Hata: " + err.message);
-                    document.body.classList.remove('generating-pdf');
-                });
+                container.appendChild(clone);
+            });
+
+            // 3. PDF Oluştur (Yarım saniye bekle ki klonlar render edilsin)
+            setTimeout(() => {
+                const opt = {
+                  margin: 0,
+                  filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+                  image: { type: 'jpeg', quality: 0.98 },
+                  html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0,
+                    windowWidth: 1200 // Masaüstü genişliği simüle et
+                  }, 
+                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                  pagebreak: { mode: 'css' }
+                };
+
+                html2pdf().set(opt).from(container).save()
+                    .then(() => {
+                        document.body.removeChild(container); // Temizlik
+                    })
+                    .catch(err => {
+                        console.error("PDF Hatası:", err);
+                        alert("Hata: " + err.message);
+                        if(document.body.contains(container)) document.body.removeChild(container);
+                    });
+            }, 500);
         }
 
         // --- DİĞER FONKSİYONLAR ---
