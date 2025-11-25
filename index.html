@@ -1270,85 +1270,14 @@
             let grandTotalCell = XLSX.utils.encode_cell({ r: totalRowIndex, c: 5 });
             if (ws[grandTotalCell]) ws[grandTotalCell].z = '0.00';
 
+            ```
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Invoice");
-            XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
+            XLSX.writeFile(wb, `Invoice_${ d.no || 'Draft' }.xlsx`);
         }
 
-        // --- DİREKT YAKALAMA İLE PDF OLUŞTURMA ---
-        async function downloadPDF() {
-            const pages = document.querySelectorAll('#print-area .page');
-            if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
-
-            // Loading indicator
-            const loadingDiv = document.createElement('div');
-            loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999999;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-family:Roboto,sans-serif;';
-            loadingDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:40px;margin-bottom:20px;"></i><br>PDF Oluşturuluyor...<br><small style="font-size:14px;opacity:0.7;">Lütfen bekleyin</small></div>';
-            document.body.appendChild(loadingDiv);
-
-            try {
-                const printArea = document.getElementById('print-area');
-
-                // Scale'i kaldır
-                const originalTransform = [];
-                pages.forEach((page, index) => {
-                    originalTransform[index] = page.style.transform;
-                    page.style.transform = 'none';
-                    page.style.marginBottom = '20px';
-                });
-
-                // Kısa bekleme - CSS'in uygulanması için
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // PDF ayarları
-                const opt = {
-                    margin: [10, 10, 10, 10],
-                    filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: false,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        windowWidth: 800,
-                        windowHeight: 1200
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a4',
-                        orientation: 'portrait'
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
-
-                // PDF oluştur
-                await html2pdf().set(opt).from(printArea).save();
-
-                // Orijinal stilleri geri yükle
-                pages.forEach((page, index) => {
-                    page.style.transform = originalTransform[index];
-                    page.style.marginBottom = '';
-                });
-
-                // Loading'i kaldır
-                document.body.removeChild(loadingDiv);
-
-            } catch (err) {
-                console.error("PDF Hatası:", err);
-                alert("PDF oluşturulurken hata oluştu:\n" + err.message + "\n\nLütfen sayfayı yenileyip tekrar deneyin.");
-
-                // Stilleri geri yükle
-                const pages = document.querySelectorAll('#print-area .page');
-                pages.forEach(page => {
-                    page.style.transform = '';
-                    page.style.marginBottom = '';
-                });
-
-                if (document.body.contains(loadingDiv)) {
-                    document.body.removeChild(loadingDiv);
-                }
-            }
+        function downloadPDF() {
+            window.print();
         }
 
         // --- DİĞER FONKSİYONLAR ---
@@ -1432,23 +1361,23 @@
                     el.className = 'invoice-item';
 
                     el.innerHTML = `
-                        <div class="inv-top">
+                < div class="inv-top" >
                             <div style="display:flex; align-items:center; overflow:hidden;">
                                 <span class="inv-badge">${d.currency}</span>
                                 <span class="inv-cust">${d.importer}</span>
                             </div>
                             <span class="inv-no">${d.no}</span>
-                        </div>
-                        
-                        <div class="inv-btm">
-                            <div style="display:flex; align-items:center; gap:5px;">
-                                <i class="far fa-calendar-alt"></i> ${d.date}
-                            </div>
-                            <div style="font-style:italic; color:#3699ff;">
-                                <i class="fas fa-user-circle" style="margin-right:3px;"></i>${d.createdBy}
-                            </div>
-                        </div>
-                    `;
+                        </div >
+
+                <div class="inv-btm">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <i class="far fa-calendar-alt"></i> ${d.date}
+                    </div>
+                    <div style="font-style:italic; color:#3699ff;">
+                        <i class="fas fa-user-circle" style="margin-right:3px;"></i>${d.createdBy}
+                    </div>
+                </div>
+            `;
                     el.onclick = () => loadInvoice(doc.id, d);
                     listDiv.appendChild(el);
                 });
@@ -1457,7 +1386,7 @@
                 .catch(error => {
                     console.error("Hata:", error);
                     listDiv.innerHTML = `
-                    <div style="color:#f64e60; background:#ffe2e5; padding:15px; border-radius:8px; font-size:12px; margin-top:10px;">
+                < div style = "color:#f64e60; background:#ffe2e5; padding:15px; border-radius:8px; font-size:12px; margin-top:10px;" >
                         <strong>Veriler Çekilemedi!</strong><br>
                         ${error.message}<br><br>
                         ${error.message.includes('index')
