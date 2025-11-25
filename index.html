@@ -799,4 +799,53 @@
                         <strong>Veriler Çekilemedi!</strong><br>
                         ${error.message}<br><br>
                         ${error.message.includes('index') 
-                            ? '<strong>ÇÖZÜM:
+                            ? '<strong>ÇÖZÜM:</strong> Veritabanı "Index" hatası. Lütfen konsolu (F12) açıp linke tıklayın.' 
+                            : 'İnternet bağlantınızı kontrol edin.'}
+                    </div>
+                `;
+            });
+        }
+
+        function loadInvoice(id, d) {
+            currentId = id;
+            document.getElementById('btn-del').style.display = 'block';
+            
+            if(document.getElementById('i-owner')) {
+                document.getElementById('i-owner').value = d.createdBy || '';
+            }
+
+            document.getElementById('i-type').value = d.type;
+            document.getElementById('i-currency').value = d.currency;
+            document.getElementById('i-imp').value = d.importer;
+            document.getElementById('i-addr').value = d.address;
+            document.getElementById('i-tel').value = d.tel;
+            document.getElementById('i-no').value = d.no;
+            document.getElementById('i-date').value = d.date;
+            document.getElementById('i-contr').value = d.contr || '';
+            document.getElementById('i-load').value = d.loading;
+            document.getElementById('i-trans').value = d.transport;
+            document.getElementById('i-pay').value = d.payment;
+            document.getElementById('i-del').value = d.delivery;
+            document.getElementById('i-box').value = d.boxes;
+            document.getElementById('i-nw').value = d.nw;
+            document.getElementById('i-gw').value = d.gw;
+            document.getElementById('i-gtip').value = d.gtip || '';
+            items = d.items || [];
+            renderPages(); switchView('editor');
+            
+            if(window.innerWidth <= 900) {
+               document.getElementById('sidebar').classList.remove('active');
+               document.querySelector('.overlay').classList.remove('active');
+            }
+        }
+
+        function deleteInvoice() {
+            if(confirm("Silinecek?")) {
+                db.collection('invoices').doc(currentId).delete().then(() => { alert("Silindi"); resetForm(); getInvoices(); });
+            }
+        }
+
+        window.onload = () => { document.getElementById('i-date').valueAsDate = new Date(); renderPages(); }
+    </script>
+</body>
+</html>
