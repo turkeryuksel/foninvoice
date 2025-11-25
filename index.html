@@ -16,7 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* --- CSS RESET --- */
+        /* --- CSS RESET & TEMEL AYARLAR --- */
         :root {
             --sidebar-width: 260px;
             --header-height: 60px;
@@ -32,13 +32,13 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 
-        /* --- LOGIN --- */
+        /* --- LOGIN EKRANI --- */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #131313; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .login-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; }
         .inp-log { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; font-size: 16px; }
         .btn-log { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; font-weight: 600; border-radius: 6px; cursor: pointer; font-size: 16px; }
 
-        /* --- SIDEBAR --- */
+        /* --- SIDEBAR (MENÜ) --- */
         .sidebar { 
             width: var(--sidebar-width); 
             background: var(--dark); 
@@ -58,7 +58,7 @@
         .menu li:hover, .menu li.active { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); }
         .admin-only { display: none; }
 
-        /* --- MAIN --- */
+        /* --- MAIN AREA --- */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
         
         .header-bar { 
@@ -72,9 +72,10 @@
         .view { display: none; width: 100%; height: 100%; flex-direction: column; }
         .view.active { display: flex; }
 
-        /* --- EDITOR --- */
+        /* --- EDITOR LAYOUT --- */
         .editor-container { display: flex; height: 100%; gap: 20px; }
         
+        /* FORM PANEL */
         .form-panel { 
             width: 360px; background: white; border-radius: 8px; 
             padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; 
@@ -84,6 +85,7 @@
         .form-control:focus { background: #fff; border-color: var(--primary); }
         .grp-label { font-size: 11px; font-weight: 700; color: #181c32; margin-top: 5px; display: block; }
 
+        /* BUTTONS */
         .btn { padding: 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; }
         .btn:active { opacity: 0.8; }
         .btn-primary { background: var(--primary); }
@@ -92,7 +94,7 @@
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
 
-        /* --- PREVIEW --- */
+        /* --- PREVIEW PANEL (A4) --- */
         .preview-panel { 
             flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; 
             display: flex; justify-content: center; padding: 40px; 
@@ -105,7 +107,7 @@
             margin-bottom: 20px; transform-origin: top center;
         }
 
-        /* --- INVOICE CSS --- */
+        /* --- INVOICE CSS (PRINT & PREVIEW) --- */
         .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 5px; }
         .logo-box img { height: 60px; object-fit: contain; }
         .exporter-info { text-align: right; font-size: 9px; line-height: 1.3; color: #000; }
@@ -166,43 +168,31 @@
             }
         }
 
-        /* --- PDF OLUŞTURMA MODU --- */
-        body.generating-pdf .sidebar, 
-        body.generating-pdf .header-bar, 
-        body.generating-pdf .form-panel,
-        body.generating-pdf .menu-toggle { 
-            display: none !important; 
+        /* --- PDF OLUŞTURMA CONTAINER STİLİ --- */
+        #pdf-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #555; /* Arka plan gri */
+            padding: 20px;
         }
-        
-        body.generating-pdf .main { 
-            display: block; height: auto; overflow: visible; background: white;
-        }
-        
-        body.generating-pdf .content-area,
-        body.generating-pdf .editor-container,
-        body.generating-pdf .preview-panel { 
-            padding: 0; display: block; overflow: visible; background: white; height: auto;
-        }
-        
-        /* SİHİRLİ DOKUNUŞ: SAYFA YÜKSEKLİĞİNİ 1MM KISALTARAK BOŞ SAYFAYI ÖNLE */
-        body.generating-pdf .page { 
+        /* Klonlanmış sayfa stili */
+        .pdf-page-clone {
             width: 210mm !important;
-            height: 296mm !important; /* 297mm yerine 296mm yapıldı */
+            height: 296mm !important; /* Boş sayfayı önlemek için 1mm kısaltıldı */
             min-height: 296mm !important;
             max-height: 296mm !important;
-            transform: none !important; 
-            margin: 0 !important; 
-            box-shadow: none;
-            margin-bottom: 0 !important;
-            overflow: hidden !important; /* Taşmaları gizle */
+            background: white !important;
+            margin: 0 !important;
+            padding: 10mm !important;
+            transform: none !important; /* Scale iptal */
+            box-shadow: none !important;
+            overflow: hidden !important;
             page-break-after: always;
-            page-break-inside: avoid;
+            position: relative;
         }
-
-        /* SON SAYFADA ASLA YENİ SAYFA AÇMA */
-        body.generating-pdf .page:last-child {
+        .pdf-page-clone:last-child {
             page-break-after: avoid !important;
-            margin-bottom: 0 !important;
         }
 
         @media print {
@@ -255,7 +245,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v11.8 Blank Fix</div>
+                    <div style="font-size:11px; color:#aaa;">v11.9 Mobile Fix</div>
                 </div>
             </div>
         </div>
@@ -692,38 +682,67 @@
 
         // --- KESİN ÇÖZÜM: GİZLİ CONTAINER + TEMİZ KLONLAMA ---
         function downloadPDF() {
-            // 1. Önce tüm sayfayı "Yazdırma Moduna" sokuyoruz
-            document.body.classList.add('generating-pdf');
+            const pages = document.querySelectorAll('.page');
+            if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // 2. Elementi seçiyoruz
-            const element = document.getElementById('print-area');
+            // 1. Gizli bir taşıyıcı oluştur (ekran dışı)
+            // Bu sefer 'fixed' ve 'top:0' 'left:0' yapıp, z-index'i çok yüksek bir katman ile üzerine örtü çekiyoruz.
+            // Off-screen (left: -10000px) mobil tarayıcılarda render edilmeyebiliyor (beyaz sayfa sebebi).
+            
+            const container = document.createElement('div');
+            container.id = 'pdf-container';
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '100vw';
+            container.style.height = '100vh';
+            container.style.overflow = 'auto';
+            container.style.background = '#555';
+            container.style.zIndex = '99999'; // En üstte görünsün (kullanıcı 1 saniyeliğine bunu görecek)
+            
+            document.body.appendChild(container);
 
-            const opt = {
-              margin: 0,
-              filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
-              image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                scrollY: 0
-              }, 
-              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-              pagebreak: { mode: 'css' }
-            };
+            // 2. Sayfaları temizleyerek klonla
+            pages.forEach((page, index) => {
+                const clone = page.cloneNode(true);
+                
+                // Bu sınıfları ekleyerek CSS'deki .pdf-page-clone kurallarını uygula
+                clone.classList.add('pdf-page-clone');
+                
+                // Resimlerin genişliğini sabitle
+                const imgs = clone.querySelectorAll('img');
+                imgs.forEach(img => img.style.maxWidth = '100%');
 
-            // 3. PDF'i oluştur
+                container.appendChild(clone);
+            });
+
+            // 3. PDF Oluştur
             setTimeout(() => {
-                html2pdf().set(opt).from(element).save()
+                const opt = {
+                  margin: 0,
+                  filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+                  image: { type: 'jpeg', quality: 0.98 },
+                  html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0,
+                    windowWidth: 1200,
+                    width: 800 // Genişliği sabitle
+                  }, 
+                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                  pagebreak: { mode: 'css' }
+                };
+
+                html2pdf().set(opt).from(container).save()
                     .then(() => {
-                        // 4. İşlem bitince yazdırma modundan çık
-                        document.body.classList.remove('generating-pdf');
+                        document.body.removeChild(container); // Temizlik
                     })
                     .catch(err => {
                         console.error("PDF Hatası:", err);
                         alert("Hata: " + err.message);
-                        document.body.classList.remove('generating-pdf');
+                        if(document.body.contains(container)) document.body.removeChild(container);
                     });
-            }, 500);
+            }, 100); // Kısa bir bekleme süresi render için
         }
 
         // --- DİĞER FONKSİYONLAR ---
