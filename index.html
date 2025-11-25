@@ -717,6 +717,58 @@
                             margin-bottom: 0 !important;
                         }
                     }
+
+                    /* --- PDF OVERLAY CONTAINER STYLES --- */
+                    #pdf-overlay-container {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: white;
+                        z-index: 999999;
+                        overflow-y: auto;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        padding: 20px 0;
+                    }
+
+                    /* PDF page render styles */
+                    .pdf-page-render {
+                        width: 210mm !important;
+                        height: 296mm !important;
+                        min-height: 296mm !important;
+                        max-height: 296mm !important;
+                        margin: 0 0 10px 0 !important;
+                        padding: 10mm !important;
+                        background: white !important;
+                        transform: none !important;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+                        border: 1px solid #eee;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        box-sizing: border-box !important;
+                        overflow: hidden !important;
+                    }
+
+                    .pdf-page-render:last-child {
+                        margin-bottom: 0 !important;
+                    }
+
+                    /* Logo size constraint for PDF */
+                    #pdf-overlay-container .logo-box img {
+                        height: 60px !important;
+                        width: auto !important;
+                        max-width: 150px !important;
+                        object-fit: contain !important;
+                        display: block !important;
+                    }
+
+                    /* Ensure footer stays at bottom */
+                    #pdf-overlay-container .footer-wrapper {
+                        margin-top: auto !important;
+                    }
     </style>
 </head>
 
