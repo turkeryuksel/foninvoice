@@ -1275,9 +1275,9 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- TEK SEFERDE PDF OLUŞTURMA (BASIT VE ETKİLİ) ---
+        // --- DİREKT YAKALAMA İLE PDF OLUŞTURMA ---
         async function downloadPDF() {
-            const pages = document.querySelectorAll('.page');
+            const pages = document.querySelectorAll('#print-area .page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
             // Loading indicator
@@ -1287,45 +1287,23 @@
             document.body.appendChild(loadingDiv);
 
             try {
-                // Tek bir container'da tüm sayfaları birleştir
-                const pdfContainer = document.createElement('div');
-                pdfContainer.style.cssText = 'position:absolute;left:-10000px;top:0;background:white;';
+                // Preview panel'i al
+                const printArea = document.getElementById('print-area');
 
+                // Geçici olarak scale'i kaldır ve tam boyutta göster
+                const originalTransform = [];
                 pages.forEach((page, index) => {
-                    const clone = page.cloneNode(true);
-
-                    // Her sayfaya özel stil
-                    clone.style.cssText = `
-                        width: 210mm;
-                        min-height: 297mm;
-                        padding: 10mm;
-                        background: white;
-                        box-sizing: border-box;
-                        page-break-after: ${index < pages.length - 1 ? 'always' : 'auto'};
-                        page-break-inside: avoid;
-                        margin: 0;
-                        display: block;
-                    `;
-
-                    // Logo boyutunu sabitle
-                    const logo = clone.querySelector('.logo-box img');
-                    if (logo) {
-                        logo.style.height = '60px';
-                        logo.style.width = 'auto';
-                        logo.style.maxWidth = '150px';
-                    }
-
-                    pdfContainer.appendChild(clone);
+                    originalTransform[index] = page.style.transform;
+                    page.style.transform = 'none';
+                    page.style.marginBottom = '20px';
                 });
 
-                document.body.appendChild(pdfContainer);
-
-                // Kısa bir bekleme - DOM'un yerleşmesi için
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Kısa bekleme - CSS'in uygulanması için
+                await new Promise(resolve => setTimeout(resolve, 300));
 
                 // PDF ayarları
                 const opt = {
-                    margin: 0,
+                    margin: [10, 10, 10, 10],
                     filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: {
@@ -1333,7 +1311,8 @@
                         useCORS: true,
                         logging: false,
                         backgroundColor: '#ffffff',
-                        removeContainer: false
+                        windowWidth: 800,
+                        windowHeight: 1200
                     },
                     jsPDF: {
                         unit: 'mm',
@@ -1344,19 +1323,28 @@
                 };
 
                 // PDF oluştur
-                await html2pdf().set(opt).from(pdfContainer).save();
+                await html2pdf().set(opt).from(printArea).save();
 
-                // Temizlik
-                document.body.removeChild(pdfContainer);
+                // Orijinal stilleri geri yükle
+                pages.forEach((page, index) => {
+                    page.style.transform = originalTransform[index];
+                    page.style.marginBottom = '';
+                });
+
+                // Loading'i kaldır
                 document.body.removeChild(loadingDiv);
 
             } catch (err) {
                 console.error("PDF Hatası:", err);
-                alert("PDF oluşturulurken hata oluştu:\n" + err.message);
+                alert("PDF oluşturulurken hata oluştu:\n" + err.message + "\n\nLütfen sayfayı yenileyip tekrar deneyin.");
 
-                // Temizlik
-                const pdfContainer = document.querySelector('[style*="left:-10000px"]');
-                if (pdfContainer) document.body.removeChild(pdfContainer);
+                // Stilleri geri yükle
+                const pages = document.querySelectorAll('#print-area .page');
+                pages.forEach(page => {
+                    page.style.transform = '';
+                    page.style.marginBottom = '';
+                });
+
                 if (document.body.contains(loadingDiv)) {
                     document.body.removeChild(loadingDiv);
                 }
