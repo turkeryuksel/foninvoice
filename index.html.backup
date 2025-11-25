@@ -6,19 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fon Cosmetics - Pro Panel</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         /* --- CSS RESET --- */
-        /* --- CSS RESET & TEMEL AYARLAR --- */
         :root {
             --sidebar-width: 260px;
             --header-height: 60px;
@@ -35,7 +36,7 @@
 
         body {
             margin: 0;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             display: flex;
             height: 100vh;
@@ -43,7 +44,6 @@
             color: #3f4254;
         }
 
-        /* SCROLLBAR */
         ::-webkit-scrollbar {
             width: 5px;
             height: 5px;
@@ -59,7 +59,6 @@
         }
 
         /* --- LOGIN --- */
-        /* --- LOGIN EKRANI --- */
         #login-screen {
             position: fixed;
             top: 0;
@@ -106,7 +105,6 @@
         }
 
         /* --- SIDEBAR --- */
-        /* --- SIDEBAR (MENÜ) --- */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--dark);
@@ -125,15 +123,11 @@
             justify-content: center;
             background: #151521;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 10px;
         }
 
         .brand img {
             height: 30px;
             object-fit: contain;
-            background: white;
-            padding: 8px 15px;
-            border-radius: 6px;
         }
 
         .user-profile {
@@ -190,7 +184,6 @@
         }
 
         /* --- MAIN --- */
-        /* --- MAIN AREA --- */
         .main {
             flex: 1;
             display: flex;
@@ -239,14 +232,12 @@
         }
 
         /* --- EDITOR --- */
-        /* --- EDITOR LAYOUT --- */
         .editor-container {
             display: flex;
             height: 100%;
             gap: 20px;
         }
 
-        /* FORM PANEL */
         .form-panel {
             width: 360px;
             background: white;
@@ -282,7 +273,6 @@
             display: block;
         }
 
-        /* BUTTONS */
         .btn {
             padding: 12px;
             border-radius: 6px;
@@ -322,8 +312,7 @@
             background: #217346;
         }
 
-        /* --- PREVIEW --- */
-        /* --- PREVIEW PANEL (A4) --- */
+        /* --- PREVIEW PANEL --- */
         .preview-panel {
             flex: 1;
             background: #5e6278;
@@ -337,9 +326,9 @@
 
         .page {
             width: 210mm;
-            height: 297mm;
+            height: 296mm;
             min-width: 210mm;
-            min-height: 297mm;
+            min-height: 296mm;
             background: white;
             padding: 10mm;
             box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
@@ -351,8 +340,7 @@
             transform-origin: top center;
         }
 
-        /* --- INVOICE CSS --- */
-        /* --- INVOICE CSS (PRINT & PREVIEW) --- */
+        /* --- INVOICE STYLES --- */
         .inv-header {
             display: flex;
             justify-content: space-between;
@@ -616,162 +604,115 @@
             .page {
                 transform: scale(0.45);
                 transform-origin: top center;
-                margin-bottom: -140mm;
             }
         }
 
-        /* --- PDF OLUŞTURMA MODU --- */
-        body.generating-pdf .sidebar,
-        body.generating-pdf .header-bar,
-        body.generating-pdf .form-panel,
-        body.generating-pdf .menu-toggle {
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+
+        /* 1. HIDE EVERYTHING IN BODY */
+        body>* {
             display: none !important;
+        }
 
-            /* --- PDF OLUŞTURMA CONTAINER STİLİ --- */
-            #pdf-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                background: #555;
-                /* Arka plan gri */
-                padding: 20px;
-            }
+        /* 2. SHOW ONLY THE PRINT CONTAINER */
+        #print-container {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 210mm !important;
+            /* STRICT A4 WIDTH */
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
 
-            body.generating-pdf .main {
-                display: block;
-                height: auto;
-                overflow: visible;
-                background: white;
-            }
+        /* 3. RESET HTML/BODY FOR PRINTING */
+        html,
+        body {
+            height: auto !important;
+            width: 210mm !important;
+            /* STRICT A4 WIDTH */
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            background: white !important;
+        }
 
-            body.generating-pdf .content-area,
-            body.generating-pdf .editor-container,
-            body.generating-pdf .preview-panel {
-                padding: 0;
-                display: block;
-                overflow: visible;
-                background: white;
-                height: auto;
-            }
+        /* 4. STYLE PAGES INSIDE PRINT CONTAINER */
+        #print-container .page {
+            display: block !important;
+            visibility: visible !important;
+            margin: 0 !important;
+            /* @page handles margins */
+            padding: 10mm !important;
+            /* Keep internal padding */
+            box-shadow: none !important;
+            page-break-after: always !important;
+            transform: none !important;
+            width: 210mm !important;
+            height: 296mm !important;
+            /* STRICT HEIGHT */
+            max-width: 210mm !important;
+            min-height: 296mm !important;
+            box-sizing: border-box !important;
+        }
 
-            /* SİHİRLİ DOKUNUŞ: SAYFA YÜKSEKLİĞİNİ 1MM KISALTARAK BOŞ SAYFAYI ÖNLE */
-            body.generating-pdf .page {
+        #print-container .page:last-child {
+            page-break-after: auto !important;
+        }
 
-                /* Klonlanmış sayfa stili */
-                .pdf-page-clone {
-                    width: 210mm !important;
-                    height: 296mm !important;
-                    /* 297mm yerine 296mm yapıldı */
-                    height: 296mm !important;
-                    /* Boş sayfayı önlemek için 1mm kısaltıldı */
-                    min-height: 296mm !important;
-                    max-height: 296mm !important;
-                    transform: none !important;
-                    margin: 0 !important;
-                    box-shadow: none;
-                    margin-bottom: 0 !important;
-                    overflow: hidden !important;
-                    /* Taşmaları gizle */
-                    background: white !important;
-                    margin: 0 !important;
-                    padding: 10mm !important;
-                    transform: none !important;
-                    /* Scale iptal */
-                    box-shadow: none !important;
-                    overflow: hidden !important;
-                    page-break-after: always;
-                    page-break-inside: avoid;
-                    position: relative;
-                }
+        /* 5. FORCE LOGO VISIBILITY & SIZE */
+        #print-container .logo-box img {
+            display: block !important;
+            visibility: visible !important;
+            height: 60px !important;
+            width: auto !important;
+            max-width: 100% !important;
+            object-fit: contain !important;
+        }
+        }
 
-                /* SON SAYFADA ASLA YENİ SAYFA AÇMA */
-                body.generating-pdf .page:last-child {
-                    .pdf-page-clone:last-child {
-                        page-break-after: avoid !important;
-                        margin-bottom: 0 !important;
-                    }
 
-                    @media print {
 
-                        .sidebar,
-                        .header-bar,
-                        .form-panel,
-                        .menu-toggle {
-                            display: none !important;
-                        }
+        /* PDF GENERATION STYLES */
+        #print-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 210mm;
+            z-index: 999999;
+            background: white;
+            display: none;
+            /* Hidden by default, shown via JS during generation */
+        }
 
-                        .main,
-                        .view,
-                        .preview-panel {
-                            display: block !important;
-                            padding: 0 !important;
-                            background: white !important;
-                            height: auto !important;
-                            overflow: visible !important;
-                        }
+        #print-container .page {
+            width: 210mm;
+            height: 296mm;
+            padding: 10mm;
+            background: white;
+            margin-bottom: 20px;
+            display: flex;
+            /* FLEXBOX FOR FOOTER */
+            flex-direction: column;
+            box-sizing: border-box;
+            border: 1px solid #eee;
+            /* Temporary border for visual debug if needed */
+        }
 
-                        .page {
-                            box-shadow: none;
-                            margin: 0;
-                            width: 100%;
-                            height: 297mm;
-                            page-break-after: always;
-                            transform: none !important;
-                            margin-bottom: 0 !important;
-                        }
-                    }
-
-                    /* --- PDF OVERLAY CONTAINER STYLES --- */
-                    #pdf-overlay-container {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: white;
-                        z-index: 999999;
-                        overflow-y: auto;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        padding: 20px 0;
-                    }
-
-                    /* PDF page render styles */
-                    .pdf-page-render {
-                        width: 210mm !important;
-                        height: 296mm !important;
-                        min-height: 296mm !important;
-                        max-height: 296mm !important;
-                        margin: 0 0 10px 0 !important;
-                        padding: 10mm !important;
-                        background: white !important;
-                        transform: none !important;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-                        border: 1px solid #eee;
-                        display: flex !important;
-                        flex-direction: column !important;
-                        box-sizing: border-box !important;
-                        overflow: hidden !important;
-                    }
-
-                    .pdf-page-render:last-child {
-                        margin-bottom: 0 !important;
-                    }
-
-                    /* Logo size constraint for PDF */
-                    #pdf-overlay-container .logo-box img {
-                        height: 60px !important;
-                        width: auto !important;
-                        max-width: 150px !important;
-                        object-fit: contain !important;
-                        display: block !important;
-                    }
-
-                    /* Ensure footer stays at bottom */
-                    #pdf-overlay-container .footer-wrapper {
-                        margin-top: auto !important;
-                    }
+        #print-container .logo-box img {
+            height: 60px;
+            object-fit: contain;
+            display: block;
+        }
     </style>
 </head>
 
@@ -806,11 +747,11 @@
             <span class="u-role" id="u-role">Kullanıcı</span>
         </div>
         <ul class="menu">
-            <li onclick="switchView('editor', this)" class="active"><i class="fas fa-file-invoice"></i>
+            <li onclick="switchView('editor', this); toggleSidebar()" class="active"><i class="fas fa-file-invoice"></i>
                 Fatura Oluştur</li>
-            <li onclick="switchView('list', this)" class="admin-only"><i class="fas fa-list"></i>
+            <li onclick="switchView('list', this); toggleSidebar()" class="admin-only"><i class="fas fa-list"></i>
                 Fatura Listesi</li>
-            <li onclick="switchView('users', this)" class="admin-only"><i class="fas fa-user-plus"></i>
+            <li onclick="switchView('users', this); toggleSidebar()" class="admin-only"><i class="fas fa-user-plus"></i>
                 Kullanıcı Ekle</li>
             <li onclick="doLogout()" style="margin-top:auto; color:#f64e60;"><i class="fas fa-power-off"></i> Çıkış Yap
             </li>
@@ -823,26 +764,21 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v11.8 Blank Fix</div>
-                    <div style="font-size:11px; color:#aaa;">v11.9 Mobile Fix</div>
+                    <div style="font-size:11px; color:#aaa;">v13.0 Visible Overlay</div>
                 </div>
             </div>
         </div>
 
         <div class="content-area">
-
             <div id="view-editor" class="view active">
                 <div class="editor-container">
                     <div class="form-panel">
-
                         <div id="admin-owner-wrapper"
                             style="display:none; background:#ffe2e5; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #f64e60;">
                             <span class="grp-label" style="color:#f64e60; margin-top:0;">YÖNETİCİ: FATURA SAHİBİ</span>
                             <input id="i-owner" class="form-control" list="dl-users" placeholder="kullanici@mail.com">
                         </div>
-
                         <button class="btn btn-warning" onclick="resetForm()">TEMİZLE / YENİ</button>
-
                         <span class="grp-label">FATURA TİPİ & PARA BİRİMİ</span>
                         <select id="i-type" class="form-control" onchange="upd()">
                             <option>PROFORMA INVOICE</option>
@@ -857,7 +793,6 @@
                             </select>
                             <input id="i-contr" class="form-control" placeholder="Sözleşme No" oninput="upd()">
                         </div>
-
                         <div style="background:#f0f2f5; padding:10px; border-radius:6px; border:1px solid #e4e6ef;">
                             <span class="grp-label" style="margin-top:0;">MÜŞTERİ (OTO TAMAMLAMA)</span>
                             <input id="i-imp" class="form-control" placeholder="Firma Adı Ara..." oninput="upd()"
@@ -866,14 +801,12 @@
                                 style="margin-bottom:5px;"></textarea>
                             <input id="i-tel" class="form-control" placeholder="Telefon" oninput="upd()">
                         </div>
-
                         <div style="display:flex; gap:8px;">
                             <div style="flex:1"><span class="grp-label">FATURA NO</span><input id="i-no"
                                     class="form-control" oninput="upd()"></div>
                             <div style="flex:1"><span class="grp-label">TARİH</span><input type="date" id="i-date"
                                     class="form-control" oninput="upd()"></div>
                         </div>
-
                         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                         <span class="grp-label">ÜRÜN EKLE (OTO TAMAMLAMA)</span>
                         <input id="p-name" class="form-control" placeholder="Ürün Adı Ara..." list="dl-products">
@@ -885,7 +818,6 @@
                         </div>
                         <button class="btn btn-primary" style="margin-top:8px;" onclick="addItem()">+ LİSTEYE
                             EKLE</button>
-
                         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                         <span class="grp-label">LOJİSTİK BİLGİLERİ</span>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -899,15 +831,12 @@
                             <input id="i-nw" class="form-control" placeholder="Net KG" oninput="upd()">
                             <input id="i-gw" class="form-control" placeholder="Brüt KG" oninput="upd()">
                         </div>
-
                         <div style="margin-top:8px;">
                             <span class="grp-label">G.T.I.P KODLARI</span>
                             <textarea id="i-gtip" class="form-control" rows="2" placeholder="Örn: 3303.00.90.00.11"
                                 oninput="upd()"></textarea>
                         </div>
-
                         <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
-
                         <button class="btn btn-success" onclick="saveInvoice()">KAYDET (CLOUD)</button>
                         <div style="display:flex; gap:10px; margin-top:10px;">
                             <button class="btn btn-excel" onclick="exportToExcel()">EXCEL</button>
@@ -917,7 +846,6 @@
                         <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del"
                             onclick="deleteInvoice()">SİL</button>
                     </div>
-
                     <div class="preview-panel" id="print-area"></div>
                 </div>
             </div>
@@ -997,19 +925,42 @@
         function doLogin() {
             const e = document.getElementById('log-email').value;
             const p = document.getElementById('log-pass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(err => document.getElementById('log-msg').innerText = err.message);
+            if (OFFLINE_MODE) {
+                if (offlineLogin(e, p)) {
+                    document.getElementById('log-msg').innerText = '';
+                } else {
+                    document.getElementById('log-msg').innerText = 'Hatalı giriş! Offline modda admin123 şifresi ile giriş yapabilirsiniz.';
+                }
+            } else {
+                auth.signInWithEmailAndPassword(e, p).catch(err => document.getElementById('log-msg').innerText = err.message);
+            }
         }
-        function doLogout() { auth.signOut(); location.reload(); }
+        function doLogout() {
+            if (OFFLINE_MODE) {
+                offlineLogout();
+            } else {
+                auth.signOut();
+                location.reload();
+            }
+        }
         function createUser() {
             const e = document.getElementById('new-email').value;
             const p = document.getElementById('new-pass').value;
             if (!e || !p) return alert("Bilgileri doldurun");
-            secondaryApp.auth().createUserWithEmailAndPassword(e, p).then(() => {
-                alert("Kullanıcı oluşturuldu!");
-                document.getElementById('new-email').value = "";
-                document.getElementById('new-pass').value = "";
-                secondaryApp.auth().signOut();
-            }).catch(err => alert(err.message));
+            if (OFFLINE_MODE) {
+                if (offlineCreateUser(e, p)) {
+                    alert("Kullanıcı oluşturuldu! (Offline)");
+                    document.getElementById('new-email').value = "";
+                    document.getElementById('new-pass').value = "";
+                }
+            } else {
+                secondaryApp.auth().createUserWithEmailAndPassword(e, p).then(() => {
+                    alert("Kullanıcı oluşturuldu!");
+                    document.getElementById('new-email').value = "";
+                    document.getElementById('new-pass').value = "";
+                    secondaryApp.auth().signOut();
+                }).catch(err => alert(err.message));
+            }
         }
 
         function switchView(id, el) {
@@ -1019,10 +970,6 @@
                 document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
                 el.classList.add('active');
             }
-
-            // Sidebar ve overlay'i kapat (mobil için önemli)
-            document.getElementById('sidebar').classList.remove('active');
-            document.querySelector('.overlay').classList.remove('active');
         }
 
         function upd() { renderPages(); }
@@ -1102,7 +1049,7 @@
             const headerHTML = `
                 <div class="inv-header">
                     <div class="logo-box">
-                        <img src="fonlogo.png" crossorigin="anonymous" style="height:60px;width:auto">
+                        <img src="fonlogo.png" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+YOK'">
                     </div>
                     <div class="exporter-info">
                         <h1>FON KOZMETİK SAN. VE TİC. LTD. ŞTİ.</h1>
@@ -1275,80 +1222,43 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- DİREKT YAKALAMA İLE PDF OLUŞTURMA ---
-        async function downloadPDF() {
-            const pages = document.querySelectorAll('#print-area .page');
+        function downloadPDF() {
+            const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // Loading indicator
-            const loadingDiv = document.createElement('div');
-            loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999999;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-family:Roboto,sans-serif;';
-            loadingDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:40px;margin-bottom:20px;"></i><br>PDF Oluşturuluyor...<br><small style="font-size:14px;opacity:0.7;">Lütfen bekleyin</small></div>';
-            document.body.appendChild(loadingDiv);
-
-            try {
-                const printArea = document.getElementById('print-area');
-
-                // Scale'i kaldır
-                const originalTransform = [];
-                pages.forEach((page, index) => {
-                    originalTransform[index] = page.style.transform;
-                    page.style.transform = 'none';
-                    page.style.marginBottom = '20px';
-                });
-
-                // Kısa bekleme - CSS'in uygulanması için
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // PDF ayarları
-                const opt = {
-                    margin: [10, 10, 10, 10],
-                    filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: false,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        windowWidth: 800,
-                        windowHeight: 1200
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a4',
-                        orientation: 'portrait'
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
-
-                // PDF oluştur
-                await html2pdf().set(opt).from(printArea).save();
-
-                // Orijinal stilleri geri yükle
-                pages.forEach((page, index) => {
-                    page.style.transform = originalTransform[index];
-                    page.style.marginBottom = '';
-                });
-
-                // Loading'i kaldır
-                document.body.removeChild(loadingDiv);
-
-            } catch (err) {
-                console.error("PDF Hatası:", err);
-                alert("PDF oluşturulurken hata oluştu:\n" + err.message + "\n\nLütfen sayfayı yenileyip tekrar deneyin.");
-
-                // Stilleri geri yükle
-                const pages = document.querySelectorAll('#print-area .page');
-                pages.forEach(page => {
-                    page.style.transform = '';
-                    page.style.marginBottom = '';
-                });
-
-                if (document.body.contains(loadingDiv)) {
-                    document.body.removeChild(loadingDiv);
-                }
+            // 1. Create or Clear Print Container
+            let printContainer = document.getElementById('print-container');
+            if (!printContainer) {
+                printContainer = document.createElement('div');
+                printContainer.id = 'print-container';
+                document.body.appendChild(printContainer);
             }
+            printContainer.innerHTML = '';
+            printContainer.style.display = 'block'; // Show it for html2pdf to capture
+
+            // 2. Clone Pages
+            pages.forEach(page => {
+                const clone = page.cloneNode(true);
+                // Ensure images are loaded/visible in clone
+                const imgs = clone.querySelectorAll('img');
+                imgs.forEach(img => img.style.maxWidth = '100%');
+                printContainer.appendChild(clone);
+            });
+
+            // 3. Generate PDF
+            const opt = {
+                margin: 0,
+                filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(printContainer).save().then(() => {
+                // Cleanup
+                printContainer.style.display = 'none';
+                printContainer.innerHTML = '';
+            });
         }
 
         // --- DİĞER FONKSİYONLAR ---
