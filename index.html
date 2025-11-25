@@ -58,7 +58,7 @@
         .menu li:hover, .menu li.active { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--primary); }
         .admin-only { display: none; }
 
-        /* --- MAIN AREA --- */
+        /* --- MAIN --- */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
         
         .header-bar { 
@@ -92,7 +92,7 @@
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
 
-        /* --- PREVIEW PANEL --- */
+        /* --- PREVIEW --- */
         .preview-panel { 
             flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; 
             display: flex; justify-content: center; padding: 40px; 
@@ -166,7 +166,7 @@
             }
         }
 
-        /* --- PDF MODU --- */
+        /* --- PDF OLUŞTURMA MODU --- */
         body.generating-pdf .sidebar, 
         body.generating-pdf .header-bar, 
         body.generating-pdf .form-panel,
@@ -175,38 +175,34 @@
         }
         
         body.generating-pdf .main { 
-            display: block; 
-            height: auto; 
-            overflow: visible; 
-            background: white;
+            display: block; height: auto; overflow: visible; background: white;
         }
         
-        body.generating-pdf .content-area { 
-            padding: 0; 
-            overflow: visible;
-        }
-        
-        body.generating-pdf .editor-container { 
-            display: block; 
-            height: auto; 
-            overflow: visible;
-        }
-        
+        body.generating-pdf .content-area,
+        body.generating-pdf .editor-container,
         body.generating-pdf .preview-panel { 
-            background: white; 
-            padding: 0; 
-            display: block; 
-            overflow: visible;
+            padding: 0; display: block; overflow: visible; background: white; height: auto;
         }
         
-        /* PDF Modunda Sayfalar */
+        /* SİHİRLİ DOKUNUŞ: SAYFA YÜKSEKLİĞİNİ 1MM KISALTARAK BOŞ SAYFAYI ÖNLE */
         body.generating-pdf .page { 
+            width: 210mm !important;
+            height: 296mm !important; /* 297mm yerine 296mm yapıldı */
+            min-height: 296mm !important;
+            max-height: 296mm !important;
             transform: none !important; 
             margin: 0 !important; 
             box-shadow: none;
             margin-bottom: 0 !important;
-            /* Tüm sayfalara page-break ekle */
+            overflow: hidden !important; /* Taşmaları gizle */
             page-break-after: always;
+            page-break-inside: avoid;
+        }
+
+        /* SON SAYFADA ASLA YENİ SAYFA AÇMA */
+        body.generating-pdf .page:last-child {
+            page-break-after: avoid !important;
+            margin-bottom: 0 !important;
         }
 
         @media print {
@@ -259,7 +255,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v11.7 No Blank Page</div>
+                    <div style="font-size:11px; color:#aaa;">v11.8 Blank Fix</div>
                 </div>
             </div>
         </div>
@@ -696,66 +692,36 @@
 
         // --- KESİN ÇÖZÜM: GİZLİ CONTAINER + TEMİZ KLONLAMA ---
         function downloadPDF() {
-            const pages = document.querySelectorAll('.page');
-            if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
+            // 1. Önce tüm sayfayı "Yazdırma Moduna" sokuyoruz
+            document.body.classList.add('generating-pdf');
 
-            // 1. Gizli bir taşıyıcı oluştur (ekran dışı)
-            const container = document.createElement('div');
-            container.style.position = 'fixed'; 
-            container.style.top = '0';
-            container.style.left = '-10000px'; // Görünmeyecek kadar uzakta
-            container.style.width = '210mm'; // A4 genişliğini zorla
-            container.style.zIndex = '-1'; // En altta
-            document.body.appendChild(container);
+            // 2. Elementi seçiyoruz
+            const element = document.getElementById('print-area');
 
-            // 2. Sayfaları temizleyerek klonla
-            pages.forEach((page, index) => {
-                const clone = page.cloneNode(true);
-                // Mobildeki küçültme etkilerini (scale) temizle
-                clone.style.transform = 'none !important'; 
-                clone.style.margin = '0'; 
-                clone.style.marginBottom = '0'; // Sayfa sonu boşluklarını kaldır
-                clone.style.boxShadow = 'none'; 
-                
-                // YENİ: SAYFA SONU KOMUTUNU KONTROL ET
-                // Sadece son sayfa DEĞİLSE "break-after" ekle
-                if (index < pages.length - 1) {
-                    clone.style.pageBreakAfter = 'always';
-                } else {
-                    clone.style.pageBreakAfter = 'avoid';
-                }
+            const opt = {
+              margin: 0,
+              filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                scrollY: 0
+              }, 
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+              pagebreak: { mode: 'css' }
+            };
 
-                // Resimlerin genişliğini sabitle (taşmayı engelle)
-                const imgs = clone.querySelectorAll('img');
-                imgs.forEach(img => img.style.maxWidth = '100%');
-
-                container.appendChild(clone);
-            });
-
-            // 3. PDF Oluştur (Yarım saniye bekle ki klonlar render edilsin)
+            // 3. PDF'i oluştur
             setTimeout(() => {
-                const opt = {
-                  margin: 0,
-                  filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
-                  image: { type: 'jpeg', quality: 0.98 },
-                  html2canvas: { 
-                    scale: 2, 
-                    useCORS: true, 
-                    scrollY: 0,
-                    windowWidth: 1200 // Masaüstü genişliği simüle et
-                  }, 
-                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                  pagebreak: { mode: 'css' }
-                };
-
-                html2pdf().set(opt).from(container).save()
+                html2pdf().set(opt).from(element).save()
                     .then(() => {
-                        document.body.removeChild(container); // Temizlik
+                        // 4. İşlem bitince yazdırma modundan çık
+                        document.body.classList.remove('generating-pdf');
                     })
                     .catch(err => {
                         console.error("PDF Hatası:", err);
                         alert("Hata: " + err.message);
-                        if(document.body.contains(container)) document.body.removeChild(container);
+                        document.body.classList.remove('generating-pdf');
                     });
             }, 500);
         }
