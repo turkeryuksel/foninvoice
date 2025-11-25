@@ -168,6 +168,50 @@
                 margin-bottom: -140mm;
             }
         }
+
+        /* --- PDF OLUŞTURMA MODU (SİHİRLİ KISIM) --- */
+        /* Bu class body'ye eklendiğinde sayfa PDF için optimize olur */
+        body.generating-pdf .sidebar, 
+        body.generating-pdf .header-bar, 
+        body.generating-pdf .form-panel,
+        body.generating-pdf .menu-toggle { 
+            display: none !important; 
+        }
+        
+        body.generating-pdf .main { 
+            display: block; 
+            height: auto; 
+            overflow: visible; 
+            background: white;
+        }
+        
+        body.generating-pdf .content-area { 
+            padding: 0; 
+            overflow: visible;
+        }
+        
+        body.generating-pdf .editor-container { 
+            display: block; 
+            height: auto; 
+            overflow: visible;
+        }
+        
+        body.generating-pdf .preview-panel { 
+            background: white; 
+            padding: 0; 
+            display: block; 
+            overflow: visible;
+        }
+        
+        /* PDF oluşturulurken mobil küçültmeyi İPTAL ET */
+        body.generating-pdf .page { 
+            transform: none !important; 
+            margin: 0 !important; 
+            box-shadow: none;
+            margin-bottom: 0 !important;
+            page-break-after: always;
+        }
+
         @media print {
             .sidebar, .header-bar, .form-panel, .menu-toggle { display: none !important; }
             .main, .view, .preview-panel { display: block !important; padding: 0 !important; background: white !important; height: auto !important; overflow: visible !important; }
@@ -184,7 +228,7 @@
     <div id="login-screen">
         <div class="login-card">
             <div style="background:white; padding:10px; border-radius:5px; display:inline-block; margin-bottom:20px;">
-                <img src="fonlogo.png" style="height: 50px;" alt="FON LOGO" onerror="this.src='/images/logo_error.png'">
+                <img src="fonlogo.png" style="height: 50px;" alt="FON LOGO" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+YOK'">
             </div>
             <h2 style="font-weight:800; letter-spacing:-1px; color:#1e1e2d; margin-top:0;">FON ADMIN</h2>
             <input type="email" id="log-email" class="inp-log" placeholder="E-posta">
@@ -198,7 +242,7 @@
 
     <div class="sidebar" id="sidebar">
         <div class="brand">
-            <img src="fonlogo.png" alt="FON LOGO" onerror="this.src='/images/logo_error.png'">
+            <img src="fonlogo.png" alt="FON LOGO" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+YOK'">
         </div>
         <div class="user-profile">
             <span class="u-email" id="u-email">...</span>
@@ -218,7 +262,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v11.3 Path Fixed</div>
+                    <div style="font-size:11px; color:#aaa;">v11.4 Final Stable</div>
                 </div>
             </div>
         </div>
@@ -481,7 +525,7 @@
             const headerHTML = `
                 <div class="inv-header">
                     <div class="logo-box">
-                        <img src="fonlogo.png" onerror="this.src='/images/logo_error.png'">
+                        <img src="fonlogo.png" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+YOK'">
                     </div>
                     <div class="exporter-info">
                         <h1>FON KOZMETİK SAN. VE TİC. LTD. ŞTİ.</h1>
@@ -568,44 +612,17 @@
             
             let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length/LIMIT_OTHER)}</div>` : '';
             currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + getFooterHTML(grandTotal, totalUnits);
-
-            autoScalePages();
         }
 
-        function autoScalePages() {
-            if (window.innerWidth > 900) return;
-            const panelWidth = document.querySelector('.preview-panel').offsetWidth - 20;
-            const A4Width = 793;
-            const scale = panelWidth / A4Width;
-            
-            document.querySelectorAll('.page').forEach(page => {
-                page.style.transform = `scale(${scale})`;
-                page.style.marginBottom = `-${(1123 * (1 - scale))}px`;
-            });
-        }
-        window.addEventListener('resize', autoScalePages);
-
-        // --- YÜKSEK KALİTE EXCEL EXPORT ---
         function exportToExcel() {
             const d = {
                 type: document.getElementById('i-type').value,
                 imp: document.getElementById('i-imp').value,
                 no: document.getElementById('i-no').value,
                 date: document.getElementById('i-date').value,
-                contr: document.getElementById('i-contr').value,
-                addr: document.getElementById('i-addr').value,
-                tel: document.getElementById('i-tel').value,
-                load: document.getElementById('i-load').value,
-                trans: document.getElementById('i-trans').value,
-                pay: document.getElementById('i-pay').value,
-                del: document.getElementById('i-del').value,
-                box: document.getElementById('i-box').value,
-                nw: document.getElementById('i-nw').value,
-                gw: document.getElementById('i-gw').value,
                 cur: document.getElementById('i-currency').value,
                 gtip: document.getElementById('i-gtip').value
             };
-            
             let data = [];
             data.push(["FON KOZMETIK SAN. VE TIC. LTD. STI."]);
             data.push(["Ortaköy Merkez Mah. Yeldeğirmeni Cad. No:17/A Silivri / İSTANBUL"]);
@@ -671,65 +688,38 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- GELİŞMİŞ PDF İNDİRME (MOBİL UYUMLU) ---
+        // --- SİHİRLİ PDF İNDİRME FONKSİYONU (MOBİL + MASAÜSTÜ) ---
         function downloadPDF() {
-            const pages = document.querySelectorAll('.page');
-            if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
+            // 1. Önce tüm sayfayı "Yazdırma Moduna" sokuyoruz
+            document.body.classList.add('generating-pdf');
 
-            const container = document.createElement('div');
-            container.style.position = 'absolute';
-            container.style.top = '-9999px';
-            container.style.left = '0';
-            container.style.width = '210mm'; 
-            document.body.appendChild(container);
+            // 2. Elementi seçiyoruz (Artık normal A4 boyutunda ve görünür)
+            const element = document.getElementById('print-area');
 
-            pages.forEach(page => {
-                const clone = page.cloneNode(true);
-                clone.style.transform = 'none'; 
-                clone.style.margin = '0'; 
-                clone.style.marginBottom = '0';
-                clone.style.boxShadow = 'none';
-                container.appendChild(clone);
-            });
+            const opt = {
+              margin: 0,
+              filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+              image: { type: 'jpeg', quality: 0.98 },
+              html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                scrollY: 0
+              }, 
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+              pagebreak: { mode: 'css' }
+            };
 
-            // Image loading wait hack for cloned nodes
-            const images = container.querySelectorAll('img');
-            const promises = [];
-            images.forEach(img => {
-                promises.push(new Promise(resolve => {
-                    if (img.complete) resolve();
-                    else {
-                        img.onload = resolve;
-                        img.onerror = resolve;
-                    }
-                }));
-            });
-
-            Promise.all(promises).then(() => {
-                const opt = {
-                  margin: 0,
-                  filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
-                  image: { type: 'jpeg', quality: 0.98 },
-                  html2canvas: { 
-                    scale: 2, 
-                    useCORS: true, 
-                    scrollY: 0,
-                    windowWidth: 800 
-                  }, 
-                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                  pagebreak: { mode: 'css' }
-                };
-
-                html2pdf().set(opt).from(container).save()
-                    .then(() => {
-                        document.body.removeChild(container); 
-                    })
-                    .catch(err => {
-                        console.error("PDF Hatası:", err);
-                        alert("Hata: " + err.message);
-                        document.body.removeChild(container);
-                    });
-            });
+            // 3. PDF'i oluştur
+            html2pdf().set(opt).from(element).save()
+                .then(() => {
+                    // 4. İşlem bitince yazdırma modundan çık
+                    document.body.classList.remove('generating-pdf');
+                })
+                .catch(err => {
+                    console.error("PDF Hatası:", err);
+                    alert("Hata: " + err.message);
+                    document.body.classList.remove('generating-pdf');
+                });
         }
 
         // --- DİĞER FONKSİYONLAR ---
