@@ -806,11 +806,11 @@
             <span class="u-role" id="u-role">Kullanıcı</span>
         </div>
         <ul class="menu">
-            <li onclick="switchView('editor', this); toggleSidebar()" class="active"><i class="fas fa-file-invoice"></i>
+            <li onclick="switchView('editor', this)" class="active"><i class="fas fa-file-invoice"></i>
                 Fatura Oluştur</li>
-            <li onclick="switchView('list', this); toggleSidebar()" class="admin-only"><i class="fas fa-list"></i>
+            <li onclick="switchView('list', this)" class="admin-only"><i class="fas fa-list"></i>
                 Fatura Listesi</li>
-            <li onclick="switchView('users', this); toggleSidebar()" class="admin-only"><i class="fas fa-user-plus"></i>
+            <li onclick="switchView('users', this)" class="admin-only"><i class="fas fa-user-plus"></i>
                 Kullanıcı Ekle</li>
             <li onclick="doLogout()" style="margin-top:auto; color:#f64e60;"><i class="fas fa-power-off"></i> Çıkış Yap
             </li>
@@ -1019,6 +1019,10 @@
                 document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
                 el.classList.add('active');
             }
+
+            // Sidebar ve overlay'i kapat (mobil için önemli)
+            document.getElementById('sidebar').classList.remove('active');
+            document.querySelector('.overlay').classList.remove('active');
         }
 
         function upd() { renderPages(); }
@@ -1271,7 +1275,7 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- DOĞRU YAPILANDIRILMIŞ PDF OLUŞTURMA ---
+        // --- TEK SEFERDE PDF OLUŞTURMA (BASIT VE ETKİLİ) ---
         async function downloadPDF() {
             const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
@@ -1283,15 +1287,25 @@
             document.body.appendChild(loadingDiv);
 
             try {
-                // Her sayfayı ayrı ayrı işle ve birleştir
-                const worker = html2pdf();
-                let isFirst = true;
+                // Tek bir container'da tüm sayfaları birleştir
+                const pdfContainer = document.createElement('div');
+                pdfContainer.style.cssText = 'position:absolute;left:-10000px;top:0;background:white;';
 
-                for (let i = 0; i < pages.length; i++) {
-                    const page = pages[i];
-
-                    // Sayfayı klonla
+                pages.forEach((page, index) => {
                     const clone = page.cloneNode(true);
+
+                    // Her sayfaya özel stil
+                    clone.style.cssText = `
+                        width: 210mm;
+                        min-height: 297mm;
+                        padding: 10mm;
+                        background: white;
+                        box-sizing: border-box;
+                        page-break-after: ${index < pages.length - 1 ? 'always' : 'auto'};
+                        page-break-inside: avoid;
+                        margin: 0;
+                        display: block;
+                    `;
 
                     // Logo boyutunu sabitle
                     const logo = clone.querySelector('.logo-box img');
@@ -1301,57 +1315,48 @@
                         logo.style.maxWidth = '150px';
                     }
 
-                    // Geçici container
-                    const tempContainer = document.createElement('div');
-                    tempContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;background:white;';
-                    tempContainer.appendChild(clone);
-                    document.body.appendChild(tempContainer);
+                    pdfContainer.appendChild(clone);
+                });
 
-                    // PDF ayarları
-                    const opt = {
-                        margin: 0,
-                        filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                        image: { type: 'jpeg', quality: 0.95 },
-                        html2canvas: {
-                            scale: 2,
-                            useCORS: true,
-                            logging: false,
-                            width: 794,  // 210mm in pixels at 96dpi
-                            height: 1123, // 297mm in pixels at 96dpi
-                            windowWidth: 794,
-                            backgroundColor: '#ffffff'
-                        },
-                        jsPDF: {
-                            unit: 'mm',
-                            format: 'a4',
-                            orientation: 'portrait'
-                        }
-                    };
+                document.body.appendChild(pdfContainer);
 
-                    if (isFirst) {
-                        await worker.set(opt).from(tempContainer).toPdf().get('pdf').then(function (pdf) {
-                            // İlk sayfa
-                        });
-                        isFirst = false;
-                    } else {
-                        await worker.get('pdf').then(function (pdf) {
-                            pdf.addPage();
-                        }).from(tempContainer).toContainer().toCanvas().toPdf();
-                    }
+                // Kısa bir bekleme - DOM'un yerleşmesi için
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // Temizlik
-                    document.body.removeChild(tempContainer);
-                }
+                // PDF ayarları
+                const opt = {
+                    margin: 0,
+                    filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        removeContainer: false
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
 
-                // PDF'i kaydet
-                await worker.save();
+                // PDF oluştur
+                await html2pdf().set(opt).from(pdfContainer).save();
 
-                // Loading'i kaldır
+                // Temizlik
+                document.body.removeChild(pdfContainer);
                 document.body.removeChild(loadingDiv);
 
             } catch (err) {
                 console.error("PDF Hatası:", err);
                 alert("PDF oluşturulurken hata oluştu:\n" + err.message);
+
+                // Temizlik
+                const pdfContainer = document.querySelector('[style*="left:-10000px"]');
+                if (pdfContainer) document.body.removeChild(pdfContainer);
                 if (document.body.contains(loadingDiv)) {
                     document.body.removeChild(loadingDiv);
                 }
