@@ -1102,7 +1102,6 @@
             const headerHTML = `
                 <div class="inv-header">
                     <div class="logo-box">
-                        <img src="fonlogo.png" crossorigin="anonymous" style="height:60px;width:auto">
                     </div>
                     <div class="exporter-info">
                         <h1>FON KOZMETİK SAN. VE TİC. LTD. ŞTİ.</h1>
@@ -1275,8 +1274,25 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        function downloadPDF() {
-            window.print();
+        async function downloadPDF() {
+            const pages = document.querySelectorAll('#print-area .page');
+            if (pages.length === 0) return alert("Lütfen önce fatura oluşturun");
+
+            const printArea = document.getElementById('print-area');
+
+            const opt = {
+                margin: 10,
+                filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#fff' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                await html2pdf().set(opt).from(printArea).save();
+            } catch (err) {
+                alert("PDF hatası: " + err.message);
+            }
         }
 
         // --- DİĞER FONKSİYONLAR ---
