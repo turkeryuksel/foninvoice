@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fon Cosmetics - Pro Panel</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -36,7 +35,7 @@
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background: var(--bg);
             display: flex;
             height: 100vh;
@@ -126,11 +125,15 @@
             justify-content: center;
             background: #151521;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px;
         }
 
         .brand img {
             height: 30px;
             object-fit: contain;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 6px;
         }
 
         .user-profile {
@@ -1269,135 +1272,17 @@
         }
 
         // --- KESİN ÇÖZÜM: GİZLİ CONTAINER + TEMİZ KLONLAMA ---
-        // --- GELİŞTİRİLMİŞ PDF OLUŞTURMA FONKSİYONU ---
-        async function downloadPDF() {
+        // --- BASIT VE ETKİLİ PDF OLUŞTURMA (WINDOW.PRINT) ---
+        function downloadPDF() {
             const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // Loading göstergesi ekle
-            const loadingDiv = document.createElement('div');
-            loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:999998;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-family:Inter,sans-serif;';
-            loadingDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:40px;margin-bottom:20px;"></i><br>PDF Oluşturuluyor...<br><small style="font-size:14px;opacity:0.7;">Lütfen bekleyin</small></div>';
-            document.body.appendChild(loadingDiv);
-
-            try {
-                // Logo'yu base64'e çevir (PDF'de görünmesi için)
-                const logoImg = document.querySelector('.logo-box img');
-                let logoBase64 = '';
-                if (logoImg && logoImg.src && !logoImg.src.startsWith('data:')) {
-                    try {
-                        logoBase64 = await imageToBase64(logoImg.src);
-                    } catch (e) {
-                        console.warn('Logo base64 dönüşümü başarısız:', e);
-                    }
-                }
-
-                // PDF container oluştur
-                const container = document.createElement('div');
-                container.id = 'pdf-overlay-container';
-                document.body.appendChild(container);
-
-                // Sayfaları klonla ve hazırla
-                pages.forEach((page, index) => {
-                    const clone = page.cloneNode(true);
-                    clone.classList.add('pdf-page-render');
-
-                    // Logo'yu base64 ile değiştir
-                    if (logoBase64) {
-                        const clonedLogo = clone.querySelector('.logo-box img');
-                        if (clonedLogo) {
-                            clonedLogo.src = logoBase64;
-                        }
-                    }
-
-                    // Tüm resimleri optimize et
-                    const imgs = clone.querySelectorAll('img');
-                    imgs.forEach(img => {
-                        img.style.maxWidth = '100%';
-                        img.style.height = 'auto';
-                    });
-
-                    container.appendChild(clone);
-                });
-
-                // Sayfanın tepesine kaydır
-                window.scrollTo(0, 0);
-
-                // Görsel render için bekle (özellikle mobil için önemli)
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                // PDF ayarları
-                const opt = {
-                    margin: 0,
-                    filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: true,
-                        scrollY: 0,
-                        scrollX: 0,
-                        windowWidth: 1200,
-                        windowHeight: document.documentElement.scrollHeight,
-                        logging: false
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a4',
-                        orientation: 'portrait',
-                        compress: true
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
-
-                // PDF oluştur ve indir
-                await html2pdf().set(opt).from(container).save();
-
-                // Temizlik
-                if (document.body.contains(container)) {
-                    document.body.removeChild(container);
-                }
-                if (document.body.contains(loadingDiv)) {
-                    document.body.removeChild(loadingDiv);
-                }
-
-            } catch (err) {
-                console.error("PDF Hatası:", err);
-                alert("PDF oluşturulurken hata oluştu:\n" + err.message + "\n\nLütfen tekrar deneyin.");
-
-                // Temizlik
-                const container = document.getElementById('pdf-overlay-container');
-                if (container && document.body.contains(container)) {
-                    document.body.removeChild(container);
-                }
-                if (document.body.contains(loadingDiv)) {
-                    document.body.removeChild(loadingDiv);
-                }
-            }
+            // Tarayıcının yazdırma dialogunu aç
+            // Kullanıcı "PDF olarak kaydet" seçeneğini seçebilir
+            window.print();
         }
 
-        // Resmi base64'e çeviren yardımcı fonksiyon
-        function imageToBase64(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous';
-                img.onload = function () {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    try {
-                        const dataURL = canvas.toDataURL('image/png');
-                        resolve(dataURL);
-                    } catch (e) {
-                        reject(e);
-                    }
-                };
-                img.onerror = reject;
-                img.src = url;
-            });
-        }
+        // imageToBase64 fonksiyonunu kaldırdık çünkü artık gerekli değil
 
         // --- DİĞER FONKSİYONLAR ---
         function resetForm() {
