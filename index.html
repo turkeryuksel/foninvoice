@@ -1271,18 +1271,92 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- KESİN ÇÖZÜM: GİZLİ CONTAINER + TEMİZ KLONLAMA ---
-        // --- BASIT VE ETKİLİ PDF OLUŞTURMA (WINDOW.PRINT) ---
-        function downloadPDF() {
+        // --- DOĞRU YAPILANDIRILMIŞ PDF OLUŞTURMA ---
+        async function downloadPDF() {
             const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // Tarayıcının yazdırma dialogunu aç
-            // Kullanıcı "PDF olarak kaydet" seçeneğini seçebilir
-            window.print();
-        }
+            // Loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999999;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-family:Roboto,sans-serif;';
+            loadingDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:40px;margin-bottom:20px;"></i><br>PDF Oluşturuluyor...<br><small style="font-size:14px;opacity:0.7;">Lütfen bekleyin</small></div>';
+            document.body.appendChild(loadingDiv);
 
-        // imageToBase64 fonksiyonunu kaldırdık çünkü artık gerekli değil
+            try {
+                // Her sayfayı ayrı ayrı işle ve birleştir
+                const worker = html2pdf();
+                let isFirst = true;
+
+                for (let i = 0; i < pages.length; i++) {
+                    const page = pages[i];
+
+                    // Sayfayı klonla
+                    const clone = page.cloneNode(true);
+
+                    // Logo boyutunu sabitle
+                    const logo = clone.querySelector('.logo-box img');
+                    if (logo) {
+                        logo.style.height = '60px';
+                        logo.style.width = 'auto';
+                        logo.style.maxWidth = '150px';
+                    }
+
+                    // Geçici container
+                    const tempContainer = document.createElement('div');
+                    tempContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;background:white;';
+                    tempContainer.appendChild(clone);
+                    document.body.appendChild(tempContainer);
+
+                    // PDF ayarları
+                    const opt = {
+                        margin: 0,
+                        filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
+                        image: { type: 'jpeg', quality: 0.95 },
+                        html2canvas: {
+                            scale: 2,
+                            useCORS: true,
+                            logging: false,
+                            width: 794,  // 210mm in pixels at 96dpi
+                            height: 1123, // 297mm in pixels at 96dpi
+                            windowWidth: 794,
+                            backgroundColor: '#ffffff'
+                        },
+                        jsPDF: {
+                            unit: 'mm',
+                            format: 'a4',
+                            orientation: 'portrait'
+                        }
+                    };
+
+                    if (isFirst) {
+                        await worker.set(opt).from(tempContainer).toPdf().get('pdf').then(function (pdf) {
+                            // İlk sayfa
+                        });
+                        isFirst = false;
+                    } else {
+                        await worker.get('pdf').then(function (pdf) {
+                            pdf.addPage();
+                        }).from(tempContainer).toContainer().toCanvas().toPdf();
+                    }
+
+                    // Temizlik
+                    document.body.removeChild(tempContainer);
+                }
+
+                // PDF'i kaydet
+                await worker.save();
+
+                // Loading'i kaldır
+                document.body.removeChild(loadingDiv);
+
+            } catch (err) {
+                console.error("PDF Hatası:", err);
+                alert("PDF oluşturulurken hata oluştu:\n" + err.message);
+                if (document.body.contains(loadingDiv)) {
+                    document.body.removeChild(loadingDiv);
+                }
+            }
+        }
 
         // --- DİĞER FONKSİYONLAR ---
         function resetForm() {
