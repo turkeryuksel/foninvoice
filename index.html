@@ -56,18 +56,19 @@
         .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #f9f9f9; }
         .form-control:focus { background: #fff; border-color: var(--primary); }
         .grp-label { font-size: 11px; font-weight: 700; color: #181c32; margin-top: 5px; display: block; }
-        
-        .btn { padding: 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; }
+        .btn { padding: 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; width: 100%; }
         .btn:active { opacity: 0.8; }
         .btn-primary { background: var(--primary); }
         .btn-success { background: #1bc5bd; }
         .btn-danger { background: #f64e60; }
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
-        .btn-mobile-pdf { background: #8e44ad; } /* Mor renk - Mobil için */
+        .btn-mobile-pdf { background: #8e44ad; }
 
         /* --- PREVIEW PANEL --- */
         .preview-panel { flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 40px; position: relative; }
+        
+        /* A4 Sayfa Stili - Önizleme */
         .page { 
             width: 210mm; height: 296mm; min-width: 210mm; min-height: 296mm;
             background: white; padding: 10mm; box-shadow: 0 5px 30px rgba(0,0,0,0.3); 
@@ -122,29 +123,40 @@
             .editor-container { flex-direction: column; overflow-y: scroll; gap: 0; }
             .form-panel { width: 100%; box-shadow: none; border-bottom: 1px solid #ddd; padding: 15px; overflow: visible; }
             .preview-panel { min-height: 500px; padding: 10px; background: #5e6278; align-items: flex-start; overflow: hidden; }
-            /* Mobilde faturayı küçült */
             .page { transform: scale(0.45); transform-origin: top center; margin-bottom: -140mm; }
             .inv-cust { max-width: 120px; } 
         }
 
-        /* --- MOBİL PDF OLUŞTURMA STİLLERİ --- */
-        /* Bu stil, mobilden PDF alırken oluşturulan geçici container içindir */
+        /* --- MOBİL PDF STİLİ --- */
         #mobile-pdf-temp-container {
             position: fixed; top: 0; left: 0;
-            width: 850px; /* Geniş masaüstü gibi davran */
+            width: 794px; /* TAM A4 GENİŞLİĞİ (96 DPI) */
             height: auto;
             background: white;
             z-index: 999999;
             overflow: visible;
-            padding: 20px;
+            padding: 0; /* Padding yok */
+            display: flex; flex-direction: column; align-items: center;
         }
-        /* Mobildeyken ama PDF oluştururken faturayı tam boy yap */
-        #mobile-pdf-temp-container .page {
-            transform: none !important;
-            margin: 0 auto 20px auto !important;
+        
+        /* PDF'e giren sayfalar için katı kurallar */
+        .pdf-render-page {
+            width: 210mm !important;
+            height: 296mm !important; /* 1mm tolerans */
+            min-height: 296mm !important;
+            max-height: 296mm !important;
+            background: white !important;
+            margin: 0 0 0 0 !important; /* Sıfır margin */
+            padding: 10mm !important;
             box-shadow: none !important;
-            border: 1px solid #eee;
+            border: none !important;
+            transform: none !important; /* Scale kesinlikle yok */
+            display: flex !important; flex-direction: column !important;
+            overflow: hidden !important;
+            page-break-after: always;
         }
+        
+        .pdf-render-page:last-child { page-break-after: avoid !important; margin-bottom: 0 !important; }
 
         @media print {
             .sidebar, .header-bar, .form-panel, .menu-toggle { display: none !important; }
@@ -197,7 +209,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v16.0 Dual Button</div>
+                    <div style="font-size:11px; color:#aaa;">v17.1 A4 Perfect Fit</div>
                 </div>
             </div>
         </div>
@@ -277,6 +289,7 @@
                             <button class="btn btn-primary" style="background:#181c32;" onclick="downloadPDF_PC()">PDF (PC)</button>
                             <button class="btn btn-mobile-pdf" onclick="downloadPDF_Mobile()">PDF (MOBİL)</button>
                         </div>
+                        <div style="font-size:10px; color:#666; text-align:center; margin-top:5px;">* Telefondan giriyorsanız "PDF (MOBİL)" kullanın.</div>
 
                         <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del" onclick="deleteInvoice()">SİL</button>
                     </div>
@@ -381,7 +394,6 @@
                 el.classList.add('active');
             }
             
-            // Mobilde ise kapat
             if (window.innerWidth <= 900) {
                document.getElementById('sidebar').classList.remove('active');
                document.querySelector('.overlay').classList.remove('active');
@@ -660,17 +672,20 @@
             const pages = document.querySelectorAll('.page');
             if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // 1. Arka planda, 800px genişliğinde, beyaz bir konteyner oluştur
+            // 1. Arka planda, 794px genişliğinde (Tam A4), beyaz bir konteyner oluştur
             const container = document.createElement('div');
             container.id = 'mobile-pdf-temp-container'; 
-            // CSS ile bu ID'ye stil verdik, ama garanti olsun diye inline da ekliyoruz:
-            container.style.position = 'fixed';
-            container.style.top = '0';
-            container.style.left = '0';
-            container.style.width = '850px'; // Masaüstü genişliği
-            container.style.background = '#ffffff';
-            container.style.zIndex = '999999';
-            container.style.padding = '20px';
+            
+            // Stil: Ekranın üstüne beyaz bir katman olarak serilsin
+            container.style.cssText = `
+                position: fixed; top: 0; left: 0;
+                width: 794px; height: 100%;
+                background: #ffffff;
+                z-index: 999999;
+                overflow-y: auto;
+                padding: 0;
+                display: flex; flex-direction: column; align-items: center;
+            `;
             
             document.body.appendChild(container);
 
@@ -678,19 +693,19 @@
             pages.forEach((page, index) => {
                 const clone = page.cloneNode(true);
                 
-                // Mobildeki küçültme etkilerini (scale) temizle, orijinal boyuta getir
-                clone.style.transform = 'none';
-                clone.style.margin = '0 auto 20px auto'; // Ortala ve boşluk bırak
-                clone.style.boxShadow = 'none';
-                clone.style.border = '1px solid #eee';
+                // Mobildeki küçültme etkilerini (scale) kaldır ve class'ı değiştir
+                clone.classList.remove('page');
+                clone.classList.add('pdf-render-page');
                 
-                // Son sayfada sayfa kesmesini engelle
-                if (index >= pages.length - 1) {
-                    clone.style.pageBreakAfter = 'avoid';
-                    clone.style.marginBottom = '0';
-                } else {
-                    clone.style.pageBreakAfter = 'always';
-                }
+                // Inline stilleri sıfırla
+                clone.style.transform = 'none';
+                clone.style.margin = '0 0 0 0';
+                clone.style.boxShadow = 'none';
+                clone.style.border = 'none';
+                
+                // Sayfa sonu ayarları
+                clone.style.pageBreakAfter = (index < pages.length - 1) ? 'always' : 'avoid';
+                clone.style.marginBottom = (index < pages.length - 1) ? '20px' : '0';
 
                 // Resimlerin genişliğini sabitle
                 const imgs = clone.querySelectorAll('img');
@@ -708,14 +723,14 @@
             // 3. PDF Oluştur (Masaüstü simülasyonu ile)
             setTimeout(() => {
                 const opt = {
-                  margin: 10,
+                  margin: 0,
                   filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
                   image: { type: 'jpeg', quality: 0.98 },
                   html2canvas: { 
                     scale: 2, 
                     useCORS: true, 
                     scrollY: 0,
-                    windowWidth: 1200 // Çizim motoruna "geniş ekrandayım" de
+                    windowWidth: 800 // Çizim motoruna "geniş ekrandayım" de (A4'ten biraz büyük)
                   }, 
                   jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                   pagebreak: { mode: 'css' }
@@ -723,14 +738,15 @@
 
                 html2pdf().set(opt).from(container).save()
                     .then(() => {
-                        document.body.removeChild(container); // İş bitince temizle
+                        // İşlem bitince sanal katmanı yok et
+                        document.body.removeChild(container);
                     })
                     .catch(err => {
                         console.error(err);
                         alert("PDF Hatası: " + err.message);
                         document.body.removeChild(container);
                     });
-            }, 500); // 0.5 sn bekleme
+            }, 1000); // 1 sn bekleme (Görsellerin yüklenmesi için)
         }
 
         // --- DİĞER FONKSİYONLAR ---
@@ -745,7 +761,6 @@
 
         function saveInvoice() {
             let ownerEmail = auth.currentUser.email;
-            // ... (Save fonksiyonu aynı)
             if (auth.currentUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
                 const adminInput = document.getElementById('i-owner').value;
                 if(adminInput && adminInput.trim() !== "") ownerEmail = adminInput.trim();
