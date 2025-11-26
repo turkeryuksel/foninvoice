@@ -64,10 +64,10 @@
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
 
-        /* --- PREVIEW PANEL (EKRAN GÖRÜNÜMÜ) --- */
+        /* --- PREVIEW PANEL --- */
         .preview-panel { flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 40px; position: relative; }
         .page { 
-            width: 210mm; height: 297mm; min-width: 210mm; min-height: 297mm;
+            width: 210mm; height: 296mm; min-width: 210mm; min-height: 296mm;
             background: white; padding: 10mm; box-shadow: 0 5px 30px rgba(0,0,0,0.3); 
             color: #000; position: relative; display: flex; flex-direction: column; 
             margin-bottom: 20px; transform-origin: top center;
@@ -97,40 +97,15 @@
 
         /* --- LISTS --- */
         .list-wrapper, .user-create-card { background: white; border-radius: 8px; padding: 20px; overflow-y: auto; height: 100%; }
-        
-        .invoice-item {
-            background: #fff; border: 1px solid #eee; border-radius: 8px;
-            padding: 15px; margin-bottom: 10px; cursor: pointer;
-        }
+        .invoice-item { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
         .invoice-item:active { background: #f5f8fa; }
-        
-        .inv-top {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
-            gap: 10px; 
-        }
-        
-        .inv-badge {
-            background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 11px;
-            padding: 3px 8px; border-radius: 4px; margin-right: 8px;
-            flex-shrink: 0;
-        }
-
-        .inv-cust {
-            font-weight: 700; font-size: 14px; color: #333;
-            white-space: nowrap;    
-            overflow: hidden;       
-            text-overflow: ellipsis; 
-            max-width: 150px;       
-        }
-        
-        .inv-no {
-            font-weight: 600; font-size: 12px; color: #888; background: #f9f9f9;
-            padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
-        }
-        
+        .inv-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
+        .inv-badge { background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; margin-right: 8px; flex-shrink: 0; }
+        .inv-cust { font-weight: 700; font-size: 14px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .inv-no { font-weight: 600; font-size: 12px; color: #888; background: #f9f9f9; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
         .inv-btm { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
 
-        /* --- OVERLAY (MENU) --- */
+        /* --- OVERLAY --- */
         .overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.5); z-index: 900; display: none; 
@@ -149,44 +124,31 @@
             .form-panel { width: 100%; box-shadow: none; border-bottom: 1px solid #ddd; padding: 15px; overflow: visible; }
             .preview-panel { min-height: 500px; padding: 10px; background: #5e6278; align-items: flex-start; overflow: hidden; }
             
-            /* Mobilde ekran görüntüsü için küçültme */
+            /* Mobil görünümde faturayı küçült */
             .page { transform: scale(0.45); transform-origin: top center; margin-bottom: -140mm; }
-            
             .inv-cust { max-width: 120px; } 
         }
-
-        /* PDF Oluşturma sırasında kullanılacak özel stil */
-        .printing-pdf-container {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            background: white;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: auto;
+        
+        /* Sadece Mobil PDF Oluşturma sırasında kullanılacak stiller */
+        .mobile-pdf-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 99999; overflow-y: auto;
+            display: flex; flex-direction: column; align-items: center;
             padding: 20px 0;
         }
-
-        .printing-pdf-page {
+        
+        .mobile-pdf-page {
             width: 210mm !important;
-            height: 296mm !important; /* 1mm tolerans */
+            height: 296mm !important;
             min-height: 296mm !important;
-            max-height: 296mm !important;
             background: white !important;
-            margin: 0 0 10px 0 !important;
+            margin: 0 0 20px 0 !important;
             padding: 10mm !important;
+            transform: none !important;
             box-shadow: none !important;
-            transform: none !important; /* Scale yok */
-            page-break-after: always;
+            border: none !important;
             display: block !important;
             overflow: hidden !important;
-        }
-        
-        .printing-pdf-page:last-child {
-            margin-bottom: 0 !important;
-            page-break-after: avoid !important;
         }
 
         @media print {
@@ -240,7 +202,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v15.0 Dual Logic</div>
+                    <div style="font-size:11px; color:#aaa;">v16.0 Hybrid Logic</div>
                 </div>
             </div>
         </div>
@@ -421,7 +383,6 @@
                 el.classList.add('active');
             }
             
-            // Sadece mobil ise sidebar'ı kapat
             if (window.innerWidth <= 900) {
                document.getElementById('sidebar').classList.remove('active');
                document.querySelector('.overlay').classList.remove('active');
@@ -678,83 +639,84 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- KESİN VE AYRIŞTIRILMIŞ PDF MANTIĞI ---
+        // --- GÜNCELLENMİŞ PDF MANTIĞI: MOBİL VE PC AYRIŞTIRILDI (v16.0) ---
         function downloadPDF() {
             const pages = document.querySelectorAll('.page');
             if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // 1. Mobil mi PC mi?
+            // CİHAZ KONTROLÜ
             const isMobile = window.innerWidth <= 900;
 
-            // 2. Klonlanacak alanı seç
-            // PC için direkt print-area'yı alabiliriz, Mobil için TEMİZ BİR KLON şart.
-            // En garantisi her ikisi için de temiz klon kullanmak.
-            
-            // Geçici, temiz bir container oluştur (Sandboxing)
+            // PC İSE: Standart indirme (En temiz yol)
+            if (!isMobile) {
+                const element = document.getElementById('print-area');
+                const opt = {
+                  margin: 0,
+                  filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+                  image: { type: 'jpeg', quality: 0.98 },
+                  html2canvas: { scale: 2, useCORS: true },
+                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                  pagebreak: { mode: 'css' }
+                };
+                html2pdf().set(opt).from(element).save();
+                return;
+            }
+
+            // MOBİL İSE: SANAL MASAÜSTÜ OLUŞTUR (Virtual Desktop Render)
+            // 1. Sanal bir container oluştur (800px genişliğinde, PC gibi görünen)
             const container = document.createElement('div');
-            container.id = 'pdf-temp-container';
+            container.id = 'virtual-desktop-layer';
             
-            // Stilleri ayarla: Ekranın üzerinde, beyaz, görünür ama kullanıcı etkileşime girmesin
-            container.style.position = 'fixed';
-            container.style.top = '0';
-            container.style.left = '0';
-            container.style.zIndex = '999999';
-            container.style.background = '#fff';
-            // Mobildeysek genişliği sabitle (Masaüstü simülasyonu)
-            container.style.width = isMobile ? '800px' : '100%'; 
-            container.style.height = 'auto';
-            container.style.overflow = 'visible';
+            // Stil: Ekranın üstüne beyaz bir katman olarak serilsin
+            // 800px genişlik vererek tarayıcıyı PC modunda olduğuna inandırıyoruz.
+            container.style.cssText = `
+                position: fixed; top: 0; left: 0;
+                width: 800px; height: 100%;
+                background: #555;
+                z-index: 999999;
+                overflow-y: auto;
+                padding: 20px;
+                display: flex; flex-direction: column; align-items: center;
+            `;
             
             document.body.appendChild(container);
 
-            // Sayfaları temizleyerek klonla ve container'a at
+            // 2. Fatura sayfalarını temizleyip bu sanal alana kopyala
             pages.forEach((page, index) => {
                 const clone = page.cloneNode(true);
                 
-                // Kritik: Tüm transform ve scale etkilerini kaldır
+                // Mobildeki küçültme (scale) etkisini kaldır
                 clone.style.transform = 'none';
-                clone.style.margin = '0 auto'; // Ortala
-                clone.style.marginBottom = '20px';
+                clone.style.margin = '0 0 20px 0';
                 clone.style.boxShadow = 'none';
-                clone.style.border = '1px solid #eee'; // Hafif kenarlık
                 
-                // Sayfa sonu ayarları
-                clone.style.pageBreakAfter = (index < pages.length - 1) ? 'always' : 'avoid';
-
-                // Resim genişliklerini sabitle
+                // Resimlerin genişliğini sabitle
                 const imgs = clone.querySelectorAll('img');
-                imgs.forEach(img => {
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                });
+                imgs.forEach(img => img.style.maxWidth = '100%');
 
                 container.appendChild(clone);
             });
 
-            // Sayfayı yukarı kaydır (Render hatasını önler)
-            window.scrollTo(0, 0);
-
-            // 3. PDF Oluşturma Ayarları
-            const opt = {
-              margin: 10, // Kenar boşluğu (mm)
-              filename: `Fatura_${document.getElementById('i-no').value || 'Belge'}.pdf`,
-              image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { 
-                scale: 2, // Yüksek çözünürlük
-                useCORS: true, // Resimler için
-                scrollY: 0,
-                // Mobildeysek pencere genişliğini 1200px gibi davranmaya zorla
-                windowWidth: isMobile ? 1200 : document.body.scrollWidth
-              }, 
-              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // 4. Oluştur ve Kaydet
-            // Yarım saniye bekle (DOM'un oturması için)
+            // 3. PDF Oluştur (Artık 800px genişliğinde bir 'masaüstü' görüntüsü alacak)
+            // Yarım saniye bekle ki görseller yüklensin
             setTimeout(() => {
+                const opt = {
+                  margin: 10,
+                  filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+                  image: { type: 'jpeg', quality: 0.98 },
+                  html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0,
+                    windowWidth: 1200 // Çizim motoruna geniş ekran olduğunu söyle
+                  }, 
+                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                  pagebreak: { mode: 'css' }
+                };
+
                 html2pdf().set(opt).from(container).save()
                     .then(() => {
-                        // Başarılı olursa container'ı sil
+                        // İşlem bitince sanal katmanı yok et
                         document.body.removeChild(container);
                     })
                     .catch(err => {
