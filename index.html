@@ -762,7 +762,11 @@
             .overlay,
             .editor-container>.form-panel,
             body>.sidebar,
-            #sidebar {
+            #sidebar,
+            .main,
+            .view,
+            .content-area,
+            .editor-container {
                 display: none !important;
                 visibility: hidden !important;
             }
@@ -772,12 +776,9 @@
                 margin: 0 !important;
                 padding: 0 !important;
                 background: white !important;
+                overflow: hidden !important;
             }
 
-            .main,
-            .view,
-            .content-area,
-            .editor-container,
             .preview-panel {
                 display: block !important;
                 width: 100% !important;
@@ -786,7 +787,8 @@
                 padding: 0 !important;
                 background: white !important;
                 height: auto !important;
-                overflow: visible !important;
+                overflow: hidden !important;
+                visibility: visible !important;
             }
 
             .page {
@@ -798,6 +800,8 @@
                 page-break-after: always !important;
                 transform: none !important;
                 background: white !important;
+                display: block !important;
+                visibility: visible !important;
             }
 
             .page:last-child {
