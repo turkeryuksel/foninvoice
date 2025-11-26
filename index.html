@@ -64,7 +64,7 @@
         .btn-warning { background: #ffa800; }
         .btn-excel { background: #217346; }
 
-        /* --- PREVIEW PANEL (EKRANDAKİ GÖRÜNÜM) --- */
+        /* --- PREVIEW PANEL (EKRAN GÖRÜNÜMÜ) --- */
         .preview-panel { flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 40px; position: relative; }
         .page { 
             width: 210mm; height: 297mm; min-width: 210mm; min-height: 297mm;
@@ -97,16 +97,44 @@
 
         /* --- LISTS --- */
         .list-wrapper, .user-create-card { background: white; border-radius: 8px; padding: 20px; overflow-y: auto; height: 100%; }
-        .invoice-item { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; }
+        
+        .invoice-item {
+            background: #fff; border: 1px solid #eee; border-radius: 8px;
+            padding: 15px; margin-bottom: 10px; cursor: pointer;
+        }
         .invoice-item:active { background: #f5f8fa; }
-        .inv-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
-        .inv-badge { background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; margin-right: 8px; flex-shrink: 0; }
-        .inv-cust { font-weight: 700; font-size: 14px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-        .inv-no { font-weight: 600; font-size: 12px; color: #888; background: #f9f9f9; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+        
+        .inv-top {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+            gap: 10px; 
+        }
+        
+        .inv-badge {
+            background: #e1f0ff; color: #3699ff; font-weight: 700; font-size: 11px;
+            padding: 3px 8px; border-radius: 4px; margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .inv-cust {
+            font-weight: 700; font-size: 14px; color: #333;
+            white-space: nowrap;    
+            overflow: hidden;       
+            text-overflow: ellipsis; 
+            max-width: 150px;       
+        }
+        
+        .inv-no {
+            font-weight: 600; font-size: 12px; color: #888; background: #f9f9f9;
+            padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+        }
+        
         .inv-btm { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
 
-        /* --- OVERLAY --- */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; display: none; }
+        /* --- OVERLAY (MENU) --- */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 900; display: none; 
+        }
         .overlay.active { display: block; }
         @media (min-width: 901px) { .overlay { display: none !important; pointer-events: none !important; } }
 
@@ -120,8 +148,45 @@
             .editor-container { flex-direction: column; overflow-y: scroll; gap: 0; }
             .form-panel { width: 100%; box-shadow: none; border-bottom: 1px solid #ddd; padding: 15px; overflow: visible; }
             .preview-panel { min-height: 500px; padding: 10px; background: #5e6278; align-items: flex-start; overflow: hidden; }
+            
+            /* Mobilde ekran görüntüsü için küçültme */
             .page { transform: scale(0.45); transform-origin: top center; margin-bottom: -140mm; }
+            
             .inv-cust { max-width: 120px; } 
+        }
+
+        /* PDF Oluşturma sırasında kullanılacak özel stil */
+        .printing-pdf-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            background: white;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: auto;
+            padding: 20px 0;
+        }
+
+        .printing-pdf-page {
+            width: 210mm !important;
+            height: 296mm !important; /* 1mm tolerans */
+            min-height: 296mm !important;
+            max-height: 296mm !important;
+            background: white !important;
+            margin: 0 0 10px 0 !important;
+            padding: 10mm !important;
+            box-shadow: none !important;
+            transform: none !important; /* Scale yok */
+            page-break-after: always;
+            display: block !important;
+            overflow: hidden !important;
+        }
+        
+        .printing-pdf-page:last-child {
+            margin-bottom: 0 !important;
+            page-break-after: avoid !important;
         }
 
         @media print {
@@ -175,7 +240,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v13.0 Sandbox PDF</div>
+                    <div style="font-size:11px; color:#aaa;">v15.0 Dual Logic</div>
                 </div>
             </div>
         </div>
@@ -356,6 +421,7 @@
                 el.classList.add('active');
             }
             
+            // Sadece mobil ise sidebar'ı kapat
             if (window.innerWidth <= 900) {
                document.getElementById('sidebar').classList.remove('active');
                document.querySelector('.overlay').classList.remove('active');
@@ -612,55 +678,91 @@
             XLSX.writeFile(wb, `Invoice_${d.no || 'Draft'}.xlsx`);
         }
 
-        // --- KESİN PDF ÇÖZÜMÜ: SANDBOX YÖNTEMİ ---
+        // --- KESİN VE AYRIŞTIRILMIŞ PDF MANTIĞI ---
         function downloadPDF() {
             const pages = document.querySelectorAll('.page');
             if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // 1. Gizli bir 'sandbox' div oluştur. Ekranda görünmeyecek ama render edilebilir olacak.
-            // position: absolute ve top: 0 sol üst köşede görünmez bir katman yaratır.
-            const container = document.createElement('div');
-            container.style.position = 'absolute';
-            container.style.left = '0';
-            container.style.top = '0';
-            container.style.zIndex = '9999'; // En üstte olsun
-            container.style.background = 'white'; // Arka plan beyaz
-            container.style.width = '210mm'; // A4 Genişliği zorla
+            // 1. Mobil mi PC mi?
+            const isMobile = window.innerWidth <= 900;
+
+            // 2. Klonlanacak alanı seç
+            // PC için direkt print-area'yı alabiliriz, Mobil için TEMİZ BİR KLON şart.
+            // En garantisi her ikisi için de temiz klon kullanmak.
             
-            // İçeriği buraya kopyala
-            pages.forEach(page => {
+            // Geçici, temiz bir container oluştur (Sandboxing)
+            const container = document.createElement('div');
+            container.id = 'pdf-temp-container';
+            
+            // Stilleri ayarla: Ekranın üzerinde, beyaz, görünür ama kullanıcı etkileşime girmesin
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.zIndex = '999999';
+            container.style.background = '#fff';
+            // Mobildeysek genişliği sabitle (Masaüstü simülasyonu)
+            container.style.width = isMobile ? '800px' : '100%'; 
+            container.style.height = 'auto';
+            container.style.overflow = 'visible';
+            
+            document.body.appendChild(container);
+
+            // Sayfaları temizleyerek klonla ve container'a at
+            pages.forEach((page, index) => {
                 const clone = page.cloneNode(true);
-                // Stilleri temizle
+                
+                // Kritik: Tüm transform ve scale etkilerini kaldır
                 clone.style.transform = 'none';
-                clone.style.margin = '0';
+                clone.style.margin = '0 auto'; // Ortala
+                clone.style.marginBottom = '20px';
                 clone.style.boxShadow = 'none';
-                clone.style.marginBottom = '0';
+                clone.style.border = '1px solid #eee'; // Hafif kenarlık
+                
+                // Sayfa sonu ayarları
+                clone.style.pageBreakAfter = (index < pages.length - 1) ? 'always' : 'avoid';
+
+                // Resim genişliklerini sabitle
+                const imgs = clone.querySelectorAll('img');
+                imgs.forEach(img => {
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                });
+
                 container.appendChild(clone);
             });
 
-            document.body.appendChild(container);
+            // Sayfayı yukarı kaydır (Render hatasını önler)
+            window.scrollTo(0, 0);
 
-            // 2. PDF Ayarları
+            // 3. PDF Oluşturma Ayarları
             const opt = {
-              margin: 0,
-              filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
+              margin: 10, // Kenar boşluğu (mm)
+              filename: `Fatura_${document.getElementById('i-no').value || 'Belge'}.pdf`,
               image: { type: 'jpeg', quality: 0.98 },
               html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                scrollY: 0, 
-                windowWidth: 1024 // Masaüstü genişliği simüle et
+                scale: 2, // Yüksek çözünürlük
+                useCORS: true, // Resimler için
+                scrollY: 0,
+                // Mobildeysek pencere genişliğini 1200px gibi davranmaya zorla
+                windowWidth: isMobile ? 1200 : document.body.scrollWidth
               }, 
               jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 3. PDF Oluştur ve Temizle
-            html2pdf().set(opt).from(container).save().then(() => {
-                document.body.removeChild(container);
-            }).catch(err => {
-                console.error(err);
-                document.body.removeChild(container);
-            });
+            // 4. Oluştur ve Kaydet
+            // Yarım saniye bekle (DOM'un oturması için)
+            setTimeout(() => {
+                html2pdf().set(opt).from(container).save()
+                    .then(() => {
+                        // Başarılı olursa container'ı sil
+                        document.body.removeChild(container);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("PDF Hatası: " + err.message);
+                        document.body.removeChild(container);
+                    });
+            }, 500);
         }
 
         // --- DİĞER FONKSİYONLAR ---
