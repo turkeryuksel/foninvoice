@@ -520,6 +520,16 @@
             background: #ffe2e5;
         }
 
+        .action-btn-sm.move {
+            color: #7e8299;
+            background: #f5f8fa;
+        }
+
+        .action-btn-sm.move:hover {
+            background: #e4e6ef;
+            color: #3f4254;
+        }
+
 
         .footer {
             border-top: 2px solid #000;
@@ -1101,17 +1111,37 @@
             renderPages();
         }
 
+        function moveItem(i, direction) {
+            if (direction === -1 && i === 0) return; // Can't move up
+            if (direction === 1 && i === items.length - 1) return; // Can't move down
+
+            const temp = items[i];
+            items[i] = items[i + direction];
+            items[i + direction] = temp;
+            renderPages();
+        }
+
         function renderSidebarItems() {
             const list = document.getElementById('added-items-list');
             list.innerHTML = '';
             items.forEach((item, i) => {
                 const div = document.createElement('div');
                 div.className = 'sidebar-item';
+
+                let moveButtons = '';
+                if (items.length > 1) {
+                    moveButtons = `
+                        <div class="action-btn-sm move" onclick="moveItem(${i}, -1)" style="${i === 0 ? 'visibility:hidden' : ''}"><i class="fas fa-arrow-up"></i></div>
+                        <div class="action-btn-sm move" onclick="moveItem(${i}, 1)" style="${i === items.length - 1 ? 'visibility:hidden' : ''}"><i class="fas fa-arrow-down"></i></div>
+                    `;
+                }
+
                 div.innerHTML = `
                     <div class="sidebar-item-info">
                         <strong>${i + 1}.</strong> ${item.name} (${item.qty})
                     </div>
                     <div class="sidebar-actions">
+                        ${moveButtons}
                         <div class="action-btn-sm edit" onclick="editItem(${i})"><i class="fas fa-edit"></i></div>
                         <div class="action-btn-sm del" onclick="delItem(${i})"><i class="fas fa-trash"></i></div>
                     </div>
