@@ -462,14 +462,64 @@
         .slbl {
             font-weight: 700;
             color: #555;
-            font-size: 7px;
+            font-size: 9px;
         }
 
         .sval {
             font-weight: 700;
             color: #000;
-            font-size: 9px;
+            font-size: 10px;
         }
+
+        /* Sidebar List Styles */
+        #added-items-list {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .sidebar-item {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .sidebar-item-info {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            margin-right: 5px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn-sm {
+            padding: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .action-btn-sm.edit {
+            color: #3699ff;
+            background: #e1f0ff;
+        }
+
+        .action-btn-sm.del {
+            color: #f64e60;
+            background: #ffe2e5;
+        }
+
 
         .footer {
             border-top: 2px solid #000;
@@ -851,6 +901,8 @@
                         <button class="btn btn-primary" style="margin-top:8px;" onclick="addItem()">+ LİSTEYE
                             EKLE</button>
 
+                        <div id="added-items-list"></div>
+
                         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
                         <span class="grp-label">LOJİSTİK BİLGİLERİ</span>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -1049,7 +1101,28 @@
             renderPages();
         }
 
+        function renderSidebarItems() {
+            const list = document.getElementById('added-items-list');
+            list.innerHTML = '';
+            items.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'sidebar-item';
+                div.innerHTML = `
+                    <div class="sidebar-item-info">
+                        <strong>${i + 1}.</strong> ${item.name} (${item.qty})
+                    </div>
+                    <div class="sidebar-actions">
+                        <div class="action-btn-sm edit" onclick="editItem(${i})"><i class="fas fa-edit"></i></div>
+                        <div class="action-btn-sm del" onclick="delItem(${i})"><i class="fas fa-trash"></i></div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
         function renderPages() {
+            renderSidebarItems(); // Update sidebar list
+
             const container = document.getElementById('print-area');
             container.innerHTML = '';
 
@@ -1106,7 +1179,7 @@
                     </div>
                 </div>
                 <table class="tbl">
-                    <thead><tr><th style="width:5%">No</th><th style="width:40%">Description</th><th style="width:15%">Code</th><th style="width:10%">Qty</th><th style="width:10%">Price</th><th style="width:15%">Total</th><th class="no-print" style="width:5%">Act</th></tr></thead>
+                    <thead><tr><th style="width:5%">No</th><th style="width:45%">Description</th><th style="width:15%">Code</th><th style="width:10%">Qty</th><th style="width:10%">Price</th><th style="width:15%">Total</th></tr></thead>
                     <tbody>
             `;
 
@@ -1123,7 +1196,7 @@
                                 <div class="scell" style="border-bottom:none;"><span class="slbl">Boxes</span><span class="sval">${d.box || '-'}</span></div>
                                 <div class="scell" style="border-bottom:none;"><span class="slbl">Net KG</span><span class="sval">${d.nw || '-'}</span></div>
                                 <div class="scell" style="border-bottom:none;"><span class="slbl">Gross KG</span><span class="sval">${d.gw || '-'}</span></div>
-                                <div class="scell" style="border-bottom:none;"><span class="slbl">Total QTY</span><span class="sval">${tUnit}</span></div>
+                                <div class="scell" style="border-bottom:none;"><span class="slbl">Total QTY</span><span class="sval">${tUnit} PCS</span></div>
                             </div>
                         </div>
                         <div class="footer">
@@ -1164,10 +1237,6 @@
                     <td style="text-align:center">${item.qty}</td>
                     <td style="text-align:center">${curSym}${item.price.toFixed(2)}</td>
                     <td style="text-align:right">${curSym}${t.toFixed(2)}</td>
-                    <td class="no-print" style="text-align:center; white-space:nowrap;">
-                        <span class="action-btn edit" onclick="editItem(${index})"><i class="fas fa-edit"></i></span>
-                        <span class="action-btn delete" onclick="delItem(${index})"><i class="fas fa-trash"></i></span>
-                    </td>
                 </tr>`;
                 itemCount++;
                 if (itemCount >= currentLimit) {
@@ -1202,10 +1271,9 @@
                 <tr>
                     <td colspan="5" style="text-align:right; font-weight:bold; border:none;">GRAND TOTAL</td>
                     <td style="text-align:right; font-weight:bold; border:1px solid #000;">${curSym}${grandTotal.toFixed(2)}</td>
-                    <td class="no-print" style="border:none;"></td>
                 </tr>
                 <tr>
-                    <td colspan="7" style="text-align:center; font-weight:bold; border:none; padding:5px; font-style:italic; background:#f9f9f9;">
+                    <td colspan="6" style="text-align:center; font-weight:bold; border:none; padding:5px; font-style:italic; background:#f9f9f9;">
                         "${textTotal}"
                     </td>
                 </tr>
