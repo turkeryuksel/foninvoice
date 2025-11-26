@@ -68,12 +68,23 @@
         /* --- PREVIEW PANEL --- */
         .preview-panel { flex: 1; background: #5e6278; border-radius: 8px; overflow: auto; display: flex; justify-content: center; padding: 40px; position: relative; }
         
-        /* A4 Sayfa Stili - Önizleme */
+        /* A4 Sayfa Yapısı */
         .page { 
-            width: 210mm; height: 296mm; min-width: 210mm; min-height: 296mm;
-            background: white; padding: 10mm; box-shadow: 0 5px 30px rgba(0,0,0,0.3); 
-            color: #000; position: relative; display: flex; flex-direction: column; 
-            margin-bottom: 20px; transform-origin: top center;
+            width: 210mm; 
+            height: 296mm; /* 297mm yerine 1mm pay bıraktık */
+            min-width: 210mm; 
+            min-height: 296mm;
+            max-height: 296mm; /* Kesin sınır */
+            background: white; 
+            padding: 10mm; 
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3); 
+            color: #000; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            margin-bottom: 20px; 
+            transform-origin: top center;
+            overflow: hidden; /* Taşan içeriği gizle - İKİNCİ SAYFAYI ÖNLER */
         }
 
         /* --- INVOICE STYLES --- */
@@ -108,7 +119,7 @@
         .inv-no { font-weight: 600; font-size: 12px; color: #888; background: #f9f9f9; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
         .inv-btm { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
 
-        /* --- OVERLAY --- */
+        /* --- OVERLAY FIX --- */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; display: none; }
         .overlay.active { display: block; }
         @media (min-width: 901px) { .overlay { display: none !important; pointer-events: none !important; } }
@@ -127,36 +138,35 @@
             .inv-cust { max-width: 120px; } 
         }
 
-        /* --- MOBİL PDF STİLİ --- */
-        #mobile-pdf-temp-container {
+        /* --- MOBİL PDF GEÇİCİ ALANI --- */
+        #mobile-pdf-container {
             position: fixed; top: 0; left: 0;
-            width: 794px; /* TAM A4 GENİŞLİĞİ (96 DPI) */
+            width: 800px; /* Masaüstü genişliği zorla */
             height: auto;
             background: white;
             z-index: 999999;
-            overflow: visible;
-            padding: 0; /* Padding yok */
-            display: flex; flex-direction: column; align-items: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
-        /* PDF'e giren sayfalar için katı kurallar */
-        .pdf-render-page {
+        /* Mobilden PDF alırken kullanılacak sayfa stili (Tam Boyut) */
+        .mobile-render-page {
             width: 210mm !important;
-            height: 296mm !important; /* 1mm tolerans */
+            height: 296mm !important;
             min-height: 296mm !important;
             max-height: 296mm !important;
-            background: white !important;
-            margin: 0 0 0 0 !important; /* Sıfır margin */
+            margin: 0 0 20px 0 !important;
             padding: 10mm !important;
+            background: white !important;
+            transform: none !important; /* Scale yok */
             box-shadow: none !important;
-            border: none !important;
-            transform: none !important; /* Scale kesinlikle yok */
-            display: flex !important; flex-direction: column !important;
-            overflow: hidden !important;
-            page-break-after: always;
+            border: 1px solid #eee;
+            overflow: hidden !important; /* Taşmaları kes */
+            display: flex !important;
+            flex-direction: column !important;
         }
-        
-        .pdf-render-page:last-child { page-break-after: avoid !important; margin-bottom: 0 !important; }
 
         @media print {
             .sidebar, .header-bar, .form-panel, .menu-toggle { display: none !important; }
@@ -209,7 +219,7 @@
                 <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
                 <div style="margin-left:10px;">
                     <div style="font-weight:700; font-size:16px;">Fatura Paneli</div>
-                    <div style="font-size:11px; color:#aaa;">v17.1 A4 Perfect Fit</div>
+                    <div style="font-size:11px; color:#aaa;">v18.0 Stabil</div>
                 </div>
             </div>
         </div>
@@ -287,9 +297,8 @@
                         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-top:10px;">
                             <button class="btn btn-excel" onclick="exportToExcel()">EXCEL</button>
                             <button class="btn btn-primary" style="background:#181c32;" onclick="downloadPDF_PC()">PDF (PC)</button>
-                            <button class="btn btn-mobile-pdf" onclick="downloadPDF_Mobile()">PDF (MOBİL)</button>
+                            <button class="btn btn-mobile-pdf" onclick="downloadPDF_Mobile()">PDF (MOB)</button>
                         </div>
-                        <div style="font-size:10px; color:#666; text-align:center; margin-top:5px;">* Telefondan giriyorsanız "PDF (MOBİL)" kullanın.</div>
 
                         <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del" onclick="deleteInvoice()">SİL</button>
                     </div>
@@ -394,6 +403,7 @@
                 el.classList.add('active');
             }
             
+            // Mobilde sidebar kapat
             if (window.innerWidth <= 900) {
                document.getElementById('sidebar').classList.remove('active');
                document.querySelector('.overlay').classList.remove('active');
@@ -655,15 +665,22 @@
             const pages = document.querySelectorAll('.page');
             if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
             
+            // 1. Elementi seç (Görünürdeki fatura)
             const element = document.getElementById('print-area');
+
             const opt = {
-              margin: 10,
+              margin: 0, // Sıfır margin çünkü sayfalar zaten marginli
               filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
               image: { type: 'jpeg', quality: 0.98 },
-              html2canvas: { scale: 2, useCORS: true },
+              html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                scrollY: 0 // En tepeyi baz al
+              },
               jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-              pagebreak: { mode: 'css' }
+              pagebreak: { mode: 'css' } // CSS break kurallarını kullan
             };
+            
             html2pdf().set(opt).from(element).save();
         }
 
@@ -672,7 +689,7 @@
             const pages = document.querySelectorAll('.page');
             if(pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // 1. Arka planda, 794px genişliğinde (Tam A4), beyaz bir konteyner oluştur
+            // 1. Arka planda, 800px genişliğinde, beyaz bir konteyner oluştur
             const container = document.createElement('div');
             container.id = 'mobile-pdf-temp-container'; 
             
@@ -695,7 +712,7 @@
                 
                 // Mobildeki küçültme etkilerini (scale) kaldır ve class'ı değiştir
                 clone.classList.remove('page');
-                clone.classList.add('pdf-render-page');
+                clone.classList.add('mobile-render-page');
                 
                 // Inline stilleri sıfırla
                 clone.style.transform = 'none';
@@ -704,8 +721,13 @@
                 clone.style.border = 'none';
                 
                 // Sayfa sonu ayarları
-                clone.style.pageBreakAfter = (index < pages.length - 1) ? 'always' : 'avoid';
-                clone.style.marginBottom = (index < pages.length - 1) ? '20px' : '0';
+                // Son sayfa hariç diğerlerine break koy
+                if (index < pages.length - 1) {
+                    clone.style.pageBreakAfter = 'always';
+                } else {
+                    clone.style.pageBreakAfter = 'avoid';
+                    clone.style.marginBottom = '0';
+                }
 
                 // Resimlerin genişliğini sabitle
                 const imgs = clone.querySelectorAll('img');
@@ -730,7 +752,8 @@
                     scale: 2, 
                     useCORS: true, 
                     scrollY: 0,
-                    windowWidth: 800 // Çizim motoruna "geniş ekrandayım" de (A4'ten biraz büyük)
+                    // Mobil ekranda bile masaüstü genişliğinde çizim yap
+                    windowWidth: 800 
                   }, 
                   jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                   pagebreak: { mode: 'css' }
