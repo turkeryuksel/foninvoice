@@ -253,11 +253,12 @@
 
         .form-control {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 16px;
             background: #f9f9f9;
+            min-height: 44px;
         }
 
         .form-control:focus {
@@ -274,11 +275,11 @@
         }
 
         .btn {
-            padding: 12px;
+            padding: 14px;
             border-radius: 6px;
             border: none;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 16px;
             cursor: pointer;
             color: white;
             display: flex;
@@ -286,6 +287,7 @@
             align-items: center;
             gap: 6px;
             width: 100%;
+            min-height: 48px;
         }
 
         .btn:active {
@@ -481,13 +483,14 @@
         .sidebar-item {
             background: #f9f9f9;
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             border-radius: 6px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
+            font-size: 14px;
+            min-height: 56px;
         }
 
         .sidebar-item-info {
@@ -504,10 +507,15 @@
         }
 
         .action-btn-sm {
-            padding: 4px;
+            padding: 8px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
+            min-width: 36px;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .action-btn-sm.edit {
@@ -1203,7 +1211,7 @@
                     <div class="box" style="padding:0;border:none;">
                         <table style="width:100%;font-size:9px;border-collapse:collapse;">
                             <tr><td style="border:1px solid #000;padding:2px;font-weight:700;background:#eee;">NO</td><td style="border:1px solid #000;padding:2px;">${d.no || '-'}</td></tr>
-                            <tr><td style="border:1px solid #000;padding:2px;font-weight:700;background:#eee;">DATE</td><td style="border:1px solid #000;padding:2px;">${d.date || '-'}</td></tr>
+                            <tr><td style="border:1px solid #000;padding:2px;font-weight:700;background:#eee;">DATE</td><td style="border:1px solid #000;padding:2px;">${formatDateDDMMYYYY(d.date)}</td></tr>
                             <tr><td style="border:1px solid #000;padding:2px;font-weight:700;background:#eee;">CONT.</td><td style="border:1px solid #000;padding:2px;">${d.contr || '-'}</td></tr>
                         </table>
                     </div>
@@ -1496,7 +1504,7 @@
                         
                         <div class="inv-btm">
                             <div style="display:flex; align-items:center; gap:5px;">
-                                <i class="far fa-calendar-alt"></i> ${d.date}
+                                <i class="far fa-calendar-alt"></i> ${formatDateDDMMYYYY(d.date)}
                             </div>
                             <div style="font-style:italic; color:#3699ff;">
                                 <i class="fas fa-user-circle" style="margin-right:3px;"></i>${d.createdBy}
@@ -1559,6 +1567,15 @@
             if (confirm("Silinecek?")) {
                 db.collection('invoices').doc(currentId).delete().then(() => { alert("Silindi"); resetForm(); getInvoices(); });
             }
+        }
+
+        function formatDateDDMMYYYY(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
         }
 
         function numberToEnglishWords(n) {
