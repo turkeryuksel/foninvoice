@@ -946,9 +946,9 @@
                         <button class="btn btn-success" onclick="saveInvoice()">KAYDET (CLOUD)</button>
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">
-                            <button class="btn btn-primary" style="background:#181c32;" onclick="createPDF(false)">PDF
-                                (PC)</button>
-                            <button class="btn btn-mobile-pdf" onclick="createPDF(true)">PDF (MOB)</button>
+                            <button class="btn btn-primary" style="background:#181c32;"
+                                onclick="createPDF(false)">YAZDIR / PDF</button>
+                            <button class="btn btn-mobile-pdf" onclick="createPDF(true)">PDF İNDİR</button>
                         </div>
 
                         <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del"
@@ -1323,42 +1323,72 @@
 
 
 
-        // --- KESİN PDF ÇÖZÜMÜ V2: ISOLATION MODE (REFACTORED) ---
+        let logoBase64 = '';
+
+        // Convert logo to base64 on page load
+        function convertLogoToBase64() {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                logoBase64 = canvas.toDataURL('image/png');
+            };
+            img.src = 'fonlogo.png';
+        }
+
+        // --- PDF GENERATION ---
         function createPDF(isMobile) {
             const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            // Mevcut scroll pozisyonunu kaydet
+            if (!isMobile) {
+                // Desktop: Use browser print dialog
+                window.print();
+                return;
+            }
+
+            // Mobile: Use html2pdf with optimized settings
             const originalScrollPos = window.scrollY;
 
-            // 1. Geçici bir render alanı oluştur
+            // Create isolated container
             const container = document.createElement('div');
             container.id = 'pdf-isolation-layer';
+            container.style.position = 'absolute';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '210mm';
+            container.style.background = 'white';
 
-            // 2. Sayfaları temizleyerek kopyala
-            pages.forEach((page, index) => {
+            // Clone pages and replace logo with base64
+            pages.forEach((page) => {
                 const clone = page.cloneNode(true);
-
-                // Her şeyi sıfırla
                 clone.classList.remove('page');
                 clone.classList.add('pdf-final-page');
 
-                // Resimlerin genişliğini sabitle
+                // Replace all logo images with base64
                 const imgs = clone.querySelectorAll('img');
                 imgs.forEach(img => {
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                    img.style.display = 'block';
+                    if (img.src.includes('fonlogo.png') && logoBase64) {
+                        img.src = logoBase64;
+                    }
+                    if (img.src.includes('sign.png')) {
+                        // Keep sign.png as is, it should load fine
+                        img.style.maxWidth = '100%';
+                        img.style.height = 'auto';
+                    }
                 });
 
                 container.appendChild(clone);
             });
 
-            // 3. İzolasyon Modunu Başlat
+            // Hide everything else
             document.body.appendChild(container);
             document.body.classList.add('pdf-capturing');
 
-            // Diğer tüm elementleri gizle (body'nin doğrudan çocukları)
             const children = document.body.children;
             for (let i = 0; i < children.length; i++) {
                 if (children[i] !== container && children[i].tagName !== 'SCRIPT' && children[i].tagName !== 'STYLE') {
@@ -1366,24 +1396,31 @@
                 }
             }
 
-            // Sayfanın en tepesine kaydır
             window.scrollTo(0, 0);
 
-            // 4. PDF Oluştur
+            // Generate PDF with optimized settings
             setTimeout(() => {
                 const opt = {
-                    margin: 0,
-                    filename: `Fatura_${document.getElementById('i-no').value}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
+                    margin: [0, 0, 0, 0],
+                    filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
+                    image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: {
                         scale: 2,
                         useCORS: true,
+                        logging: false,
+                        letterRendering: true,
                         scrollY: 0,
-                        windowWidth: 1200, // Her zaman masaüstü gibi davran
+                        scrollX: 0,
+                        windowWidth: 794, // A4 width in pixels at 96 DPI
                         backgroundColor: '#ffffff'
                     },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: 'css' }
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
                 html2pdf().set(opt).from(container).save()
@@ -1391,24 +1428,21 @@
                         cleanup();
                     })
                     .catch(err => {
-                        console.error(err);
-                        alert("PDF Hatası: " + err.message);
+                        console.error('PDF Error:', err);
+                        alert("PDF oluşturulurken hata: " + err.message);
                         cleanup();
                     });
-            }, 500); // DOM'un oturması için kısa bekleme
+            }, 800); // Longer wait for images to load
 
             function cleanup() {
-                // Temizlik
                 if (document.body.contains(container)) {
                     document.body.removeChild(container);
                 }
                 document.body.classList.remove('pdf-capturing');
 
-                // Gizlenenleri geri getir
                 const hidden = document.querySelectorAll('.hide-on-pdf');
                 hidden.forEach(el => el.classList.remove('hide-on-pdf'));
 
-                // Scroll'u geri yükle
                 window.scrollTo(0, originalScrollPos);
             }
         }
@@ -1596,7 +1630,11 @@
             return format(n).trim();
         }
 
-        window.onload = () => { document.getElementById('i-date').valueAsDate = new Date(); renderPages(); }
+        window.onload = () => {
+            document.getElementById('i-date').valueAsDate = new Date();
+            renderPages();
+            convertLogoToBase64();
+        }
     </script>
 </body>
 
