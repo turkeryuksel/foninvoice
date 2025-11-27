@@ -1340,7 +1340,7 @@
                         <div class="footer">
                             <div>
                                 <strong>MANUFACTURER:</strong> FON KOZMETIK SAN. VE TIC. LTD. STI.<br>
-                                <strong>G.T.I.P:</strong> ${d.gtip || '3303.00.90.00.11'}<br>
+                                ${d.gtip ? `<strong>G.T.I.P:</strong> ${d.gtip}<br>` : ''}
                                 GOODS ARE OF TURKISH ORIGIN.
                             </div>
                             <div style="border:1px solid #999;padding:3px;width:45%;"><strong>BANK: VAKIFBANK (${d.cur})</strong><br>BENEFICIARY: FON KOZMETİK SAN.VE TİC.LTD.ŞTİ.<br>IBAN: ${iban} <br> SWIFT: TVBATR2A</div>
