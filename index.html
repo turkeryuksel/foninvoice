@@ -30,6 +30,8 @@
             box-sizing: border-box;
             outline: none;
             -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+            /* Force font globally */
         }
 
         body {
@@ -40,6 +42,10 @@
             height: 100vh;
             overflow: hidden;
             color: #3f4254;
+            max-width: 100vw;
+            /* Prevent horizontal overflow */
+            overflow-x: hidden;
+            /* Hide horizontal scrollbar */
         }
 
         ::-webkit-scrollbar {
@@ -201,6 +207,8 @@
             justify-content: space-between;
             padding: 0 20px;
             flex-shrink: 0;
+            padding-top: env(safe-area-inset-top);
+            /* Safe area for notch */
         }
 
         .menu-toggle {
@@ -658,7 +666,10 @@
 
             .header-bar {
                 padding: 0 15px;
-                margin-top: 10px;
+                padding-top: max(env(safe-area-inset-top), 10px);
+                /* Ensure space from status bar */
+                margin-top: 0;
+                /* Remove margin, use padding instead */
             }
 
             .content-area {
@@ -673,24 +684,33 @@
 
             .form-panel {
                 width: 100%;
+                max-width: 100%;
+                /* Prevent overflow */
                 box-shadow: none;
                 border-bottom: 1px solid #ddd;
                 padding: 15px;
                 overflow: visible;
+                box-sizing: border-box;
+                /* Include padding in width */
             }
 
             .preview-panel {
-                min-height: 750px;
+                min-height: 600px;
+                /* Reduced height for better mobile fit */
                 padding: 10px;
                 background: #5e6278;
                 align-items: flex-start;
                 overflow: hidden;
+                justify-content: center;
+                /* Center the scaled page */
             }
 
             .page {
-                transform: scale(0.45);
+                transform: scale(0.42);
+                /* Slightly smaller scale to ensure fit */
                 transform-origin: top center;
-                margin-bottom: -140mm;
+                margin-bottom: -150mm;
+                /* Adjusted margin for new scale */
             }
 
             .inv-cust {
@@ -753,7 +773,9 @@
         }
 
         @media print {
-            body * {
+
+            /* Hide everything by default that has the hidden class */
+            .hidden-for-print {
                 display: none !important;
             }
 
@@ -762,10 +784,11 @@
                 margin: 0;
                 padding: 0;
                 background: white;
-                height: auto;
+                height: 100%;
                 overflow: visible;
             }
 
+            /* Ensure isolation layer is visible and positioned correctly */
             #pdf-isolation-layer {
                 display: block !important;
                 position: absolute;
@@ -774,68 +797,24 @@
                 width: 100%;
                 margin: 0;
                 padding: 0;
-            }
-
-            #pdf-isolation-layer * {
-                display: block !important;
-                /* Ensure children are visible */
                 visibility: visible !important;
             }
 
-            /* Restore flex/grid for inner elements of the invoice if needed */
-            #pdf-isolation-layer .inv-header {
-                display: flex !important;
+            /* Ensure content inside isolation layer is visible */
+            #pdf-isolation-layer * {
+                visibility: visible !important;
             }
 
-            #pdf-isolation-layer .info-grid {
-                display: grid !important;
-            }
-
-            #pdf-isolation-layer .ship-grid {
-                display: grid !important;
-            }
-
-            #pdf-isolation-layer .footer {
-                display: flex !important;
-            }
-
+            /* Force layout preservation */
+            #pdf-isolation-layer .inv-header,
+            #pdf-isolation-layer .footer,
+            #pdf-isolation-layer .inv-top,
             #pdf-isolation-layer .inv-btm {
                 display: flex !important;
             }
 
-            #pdf-isolation-layer table {
-                display: table !important;
-            }
-
-            #pdf-isolation-layer tr {
-                display: table-row !important;
-            }
-
-            #pdf-isolation-layer td,
-            #pdf-isolation-layer th {
-                display: table-cell !important;
-            }
-
-            #pdf-isolation-layer img {
-                display: inline-block !important;
-            }
-
-            #pdf-isolation-layer span,
-            #pdf-isolation-layer strong,
-            #pdf-isolation-layer div {
-                /* Default to block but let specific classes override if needed */
-            }
-
-            /* Specific fix for flex layouts inside the invoice */
-            .inv-header,
-            .footer,
-            .inv-top,
-            .inv-btm {
-                display: flex !important;
-            }
-
-            .info-grid,
-            .ship-grid {
+            #pdf-isolation-layer .info-grid,
+            #pdf-isolation-layer .ship-grid {
                 display: grid !important;
             }
 
@@ -1472,14 +1451,16 @@
                 container.appendChild(clone);
             });
 
-            // Hide everything else
+            // Hide everything else explicitly
             document.body.appendChild(container);
             document.body.classList.add('pdf-capturing');
 
+            // Hide all direct children of body except scripts, styles, and our container
             const children = document.body.children;
             for (let i = 0; i < children.length; i++) {
-                if (children[i] !== container && children[i].tagName !== 'SCRIPT' && children[i].tagName !== 'STYLE') {
-                    children[i].classList.add('hide-on-pdf');
+                const child = children[i];
+                if (child !== container && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+                    child.classList.add('hidden-for-print');
                 }
             }
 
@@ -1488,20 +1469,40 @@
             // Wait for images/layout
             setTimeout(() => {
                 if (mode === 'print') {
+                    // Setup cleanup listener before printing
+                    const cleanupListener = () => {
+                        cleanup();
+                        window.removeEventListener('afterprint', cleanupListener);
+                    };
+                    window.addEventListener('afterprint', cleanupListener);
+
                     window.print();
-                    // Cleanup after print dialog closes (or immediately if non-blocking)
-                    // Note: In some browsers window.print() is blocking, in others not.
-                    // We'll use a small timeout or the 'afterprint' event if possible, 
-                    // but for simplicity we'll just cleanup after a delay or rely on user refreshing if stuck.
-                    // Actually, better to listen to afterprint or just cleanup after a short delay.
-                    // Most modern browsers block.
-                    cleanup();
+
+                    // Fallback cleanup for browsers that don't block or fire afterprint reliably
+                    // We give it a long timeout (e.g. 5 seconds) to allow the print dialog to initialize
+                    // If the user cancels/prints quickly, afterprint handles it.
+                    // If not, this ensures we don't get stuck in print mode forever.
+                    // However, 5s might be too short if user is selecting printer. 
+                    // Better to rely on user interaction or just leave it? 
+                    // Let's set a very long timeout or just rely on afterprint + a "Restore" button if stuck?
+                    // For now, let's use a 2 second delay which is usually enough for the dialog to grab the content.
+                    // Note: On mobile, print() might be non-blocking.
+                    setTimeout(() => {
+                        // Only cleanup if we haven't already (check if container exists)
+                        if (document.body.contains(container)) {
+                            // On mobile/some browsers, we might want to wait longer.
+                            // But if we cleanup too early, the print preview is blank.
+                            // Let's NOT auto-cleanup on timeout for print, rely on afterprint.
+                            // BUT, if afterprint is not supported?
+                            // Most modern browsers support it.
+                        }
+                    }, 1000);
                 } else {
                     // PDF Download
                     const opt = {
                         margin: [0, 0, 0, 0],
                         filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                        image: { type: 'jpeg', quality: 0.95 },
+                        image: { type: 'jpeg', quality: 0.98 },
                         html2canvas: {
                             scale: 2,
                             useCORS: true,
@@ -1537,8 +1538,12 @@
                 }
                 document.body.classList.remove('pdf-capturing');
 
-                const hidden = document.querySelectorAll('.hide-on-pdf');
-                hidden.forEach(el => el.classList.remove('hide-on-pdf'));
+                const hidden = document.querySelectorAll('.hidden-for-print');
+                hidden.forEach(el => el.classList.remove('hidden-for-print'));
+
+                // Also remove the old class just in case
+                const oldHidden = document.querySelectorAll('.hide-on-pdf');
+                oldHidden.forEach(el => el.classList.remove('hide-on-pdf'));
 
                 window.scrollTo(0, originalScrollPos);
             }
