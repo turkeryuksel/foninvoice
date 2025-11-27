@@ -753,63 +753,104 @@
         }
 
         @media print {
-
-            /* Hide all UI elements */
-            .sidebar,
-            .header-bar,
-            .form-panel,
-            .menu-toggle,
-            .overlay,
-            .editor-container>.form-panel,
-            body>.sidebar,
-            #sidebar,
-            .main,
-            .view,
-            .content-area,
-            .editor-container {
+            body * {
                 display: none !important;
-                visibility: hidden !important;
             }
 
-            /* Show only the invoice preview */
-            body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-                overflow: hidden !important;
+            body,
+            html {
+                margin: 0;
+                padding: 0;
+                background: white;
+                height: auto;
+                overflow: visible;
             }
 
-            .preview-panel {
+            #pdf-isolation-layer {
                 display: block !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-                height: auto !important;
-                overflow: hidden !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #pdf-isolation-layer * {
+                display: block !important;
+                /* Ensure children are visible */
                 visibility: visible !important;
             }
 
-            .page {
-                box-shadow: none !important;
+            /* Restore flex/grid for inner elements of the invoice if needed */
+            #pdf-isolation-layer .inv-header {
+                display: flex !important;
+            }
+
+            #pdf-isolation-layer .info-grid {
+                display: grid !important;
+            }
+
+            #pdf-isolation-layer .ship-grid {
+                display: grid !important;
+            }
+
+            #pdf-isolation-layer .footer {
+                display: flex !important;
+            }
+
+            #pdf-isolation-layer .inv-btm {
+                display: flex !important;
+            }
+
+            #pdf-isolation-layer table {
+                display: table !important;
+            }
+
+            #pdf-isolation-layer tr {
+                display: table-row !important;
+            }
+
+            #pdf-isolation-layer td,
+            #pdf-isolation-layer th {
+                display: table-cell !important;
+            }
+
+            #pdf-isolation-layer img {
+                display: inline-block !important;
+            }
+
+            #pdf-isolation-layer span,
+            #pdf-isolation-layer strong,
+            #pdf-isolation-layer div {
+                /* Default to block but let specific classes override if needed */
+            }
+
+            /* Specific fix for flex layouts inside the invoice */
+            .inv-header,
+            .footer,
+            .inv-top,
+            .inv-btm {
+                display: flex !important;
+            }
+
+            .info-grid,
+            .ship-grid {
+                display: grid !important;
+            }
+
+            .pdf-final-page {
                 margin: 0 !important;
-                padding: 10mm !important;
+                page-break-after: always !important;
+                box-shadow: none !important;
                 width: 100% !important;
                 height: 297mm !important;
-                page-break-after: always !important;
-                transform: none !important;
+                overflow: hidden !important;
                 background: white !important;
-                display: block !important;
-                visibility: visible !important;
             }
 
-            .page:last-child {
+            .pdf-final-page:last-child {
                 page-break-after: avoid !important;
-            }
-
-            .no-print {
-                display: none !important;
             }
         }
 
@@ -978,8 +1019,8 @@
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">
                             <button class="btn btn-primary" style="background:#181c32;"
-                                onclick="createPDF(false)">YAZDIR / PDF</button>
-                            <button class="btn btn-mobile-pdf" onclick="createPDF(true)">PDF İNDİR</button>
+                                onclick="handleExport('print')">YAZDIR / PDF</button>
+                            <button class="btn btn-mobile-pdf" onclick="handleExport('download')">PDF İNDİR</button>
                         </div>
 
                         <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del"
@@ -1393,18 +1434,11 @@
             img.src = 'fonlogo.png';
         }
 
-        // --- PDF GENERATION ---
-        function createPDF(isMobile) {
+        // --- EXPORT FUNCTION (PRINT & PDF) ---
+        function handleExport(mode) {
             const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
 
-            if (!isMobile) {
-                // Desktop: Use browser print dialog
-                window.print();
-                return;
-            }
-
-            // Mobile: Use html2pdf with optimized settings
             const originalScrollPos = window.scrollY;
 
             // Create isolated container
@@ -1415,6 +1449,7 @@
             container.style.left = '0';
             container.style.width = '210mm';
             container.style.background = 'white';
+            container.style.zIndex = '9999999';
 
             // Clone pages and replace logo with base64
             pages.forEach((page) => {
@@ -1429,7 +1464,6 @@
                         img.src = logoBase64;
                     }
                     if (img.src.includes('sign.png')) {
-                        // Keep sign.png as is, it should load fine
                         img.style.maxWidth = '100%';
                         img.style.height = 'auto';
                     }
@@ -1451,41 +1485,51 @@
 
             window.scrollTo(0, 0);
 
-            // Generate PDF with optimized settings
+            // Wait for images/layout
             setTimeout(() => {
-                const opt = {
-                    margin: [0, 0, 0, 0],
-                    filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                    image: { type: 'jpeg', quality: 0.95 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        letterRendering: true,
-                        scrollY: 0,
-                        scrollX: 0,
-                        windowWidth: 794, // A4 width in pixels at 96 DPI
-                        backgroundColor: '#ffffff'
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a4',
-                        orientation: 'portrait',
-                        compress: true
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
+                if (mode === 'print') {
+                    window.print();
+                    // Cleanup after print dialog closes (or immediately if non-blocking)
+                    // Note: In some browsers window.print() is blocking, in others not.
+                    // We'll use a small timeout or the 'afterprint' event if possible, 
+                    // but for simplicity we'll just cleanup after a delay or rely on user refreshing if stuck.
+                    // Actually, better to listen to afterprint or just cleanup after a short delay.
+                    // Most modern browsers block.
+                    cleanup();
+                } else {
+                    // PDF Download
+                    const opt = {
+                        margin: [0, 0, 0, 0],
+                        filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
+                        image: { type: 'jpeg', quality: 0.95 },
+                        html2canvas: {
+                            scale: 2,
+                            useCORS: true,
+                            logging: false,
+                            letterRendering: true,
+                            scrollY: 0,
+                            scrollX: 0,
+                            windowWidth: 794,
+                            backgroundColor: '#ffffff'
+                        },
+                        jsPDF: {
+                            unit: 'mm',
+                            format: 'a4',
+                            orientation: 'portrait',
+                            compress: true
+                        },
+                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    };
 
-                html2pdf().set(opt).from(container).save()
-                    .then(() => {
-                        cleanup();
-                    })
-                    .catch(err => {
-                        console.error('PDF Error:', err);
-                        alert("PDF oluşturulurken hata: " + err.message);
-                        cleanup();
-                    });
-            }, 800); // Longer wait for images to load
+                    html2pdf().set(opt).from(container).save()
+                        .then(() => cleanup())
+                        .catch(err => {
+                            console.error('PDF Error:', err);
+                            alert("PDF oluşturulurken hata: " + err.message);
+                            cleanup();
+                        });
+                }
+            }, 500);
 
             function cleanup() {
                 if (document.body.contains(container)) {
