@@ -266,6 +266,18 @@
             font-size: 16px;
             background: #f9f9f9;
             min-height: 44px;
+            max-height: 44px;
+            /* Prevent date inputs from being taller */
+            line-height: 1.2;
+            /* Normalize line height */
+        }
+
+        /* Specific fix for date inputs on mobile */
+        input[type="date"].form-control {
+            height: 44px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
         }
 
         .form-control:focus {
