@@ -274,10 +274,19 @@
 
         /* Specific fix for date inputs on mobile */
         input[type="date"].form-control {
-            height: 44px;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
+            height: 44px !important;
+            min-height: 44px !important;
+            max-height: 44px !important;
+            padding: 10px 12px !important;
+            display: block;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Remove default date picker styling */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0.6;
         }
 
         .form-control:focus {
@@ -678,10 +687,12 @@
 
             .header-bar {
                 padding: 0 15px;
-                padding-top: max(env(safe-area-inset-top), 10px);
-                /* Ensure space from status bar */
+                padding-top: max(env(safe-area-inset-top), 20px);
+                /* Increased from 10px to 20px */
                 margin-top: 0;
-                /* Remove margin, use padding instead */
+                height: auto;
+                /* Allow height to adjust with padding */
+                min-height: var(--header-height);
             }
 
             .content-area {
