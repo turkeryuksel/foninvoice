@@ -1349,7 +1349,7 @@
                             <div></div>
                             <div>
                                 <strong>FON KOZMETIK SAN. VE TIC. LTD. STI.</strong><br>
-                                <img src="sign.png" style="height:60px; margin-top:5px; object-fit:contain;" alt="Signature">
+                                <img src="sign.png" style="height:150px; margin-top:5px; object-fit:contain;" alt="Signature">
                             </div>
                         </div>
                     </div>
@@ -1360,7 +1360,7 @@
             let pageContent = headerHTML;
             let rowsHTML = '';
             let itemCount = 0, grandTotal = 0, totalUnits = 0;
-            const LIMIT_FIRST = 19;
+            const LIMIT_FIRST = 20; // Reduced from 19 to prevent overflow with larger signature
             const LIMIT_OTHER = 24;
             let currentLimit = LIMIT_FIRST;
             let pageIndex = 1;
