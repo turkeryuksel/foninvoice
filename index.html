@@ -855,6 +855,10 @@
             <h2 style="font-weight:800; letter-spacing:-1px; color:#1e1e2d; margin-top:0;">FON ADMIN</h2>
             <input type="email" id="log-email" class="inp-log" placeholder="E-posta">
             <input type="password" id="log-pass" class="inp-log" placeholder="Şifre">
+            <div style="display:flex; align-items:center; margin-bottom:15px; justify-content:flex-start;">
+                <input type="checkbox" id="remember-me" style="width:auto; margin-right:8px;">
+                <label for="remember-me" style="font-size:14px; color:#555; cursor:pointer;">Beni Hatırla</label>
+            </div>
             <button class="btn-log" onclick="doLogin()">Giriş Yap</button>
             <p id="log-msg" style="color:#f64e60; font-size:12px; margin-top:10px;"></p>
         </div>
@@ -1061,8 +1065,30 @@
         function doLogin() {
             const e = document.getElementById('log-email').value;
             const p = document.getElementById('log-pass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(err => document.getElementById('log-msg').innerText = err.message);
+            const remember = document.getElementById('remember-me').checked;
+
+            if (remember) {
+                localStorage.setItem('savedEmail', e);
+                auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                    .then(() => auth.signInWithEmailAndPassword(e, p))
+                    .catch(err => document.getElementById('log-msg').innerText = err.message);
+            } else {
+                localStorage.removeItem('savedEmail');
+                auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+                    .then(() => auth.signInWithEmailAndPassword(e, p))
+                    .catch(err => document.getElementById('log-msg').innerText = err.message);
+            }
         }
+
+        // Pre-fill email if saved
+        window.addEventListener('load', () => {
+            const savedEmail = localStorage.getItem('savedEmail');
+            if (savedEmail) {
+                document.getElementById('log-email').value = savedEmail;
+                document.getElementById('remember-me').checked = true;
+            }
+        });
+
         function doLogout() { auth.signOut(); location.reload(); }
         function createUser() {
             const e = document.getElementById('new-email').value;
