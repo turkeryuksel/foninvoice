@@ -1338,7 +1338,7 @@
                             <div></div>
                             <div>
                                 <strong>FON KOZMETIK SAN. VE TIC. LTD. STI.</strong><br>
-                                <img src="sign.png" style="height:120px; margin-top:5px; object-fit:contain;" alt="Signature">
+                                <img src="sign.png" style="height:60px; margin-top:5px; object-fit:contain;" alt="Signature">
                             </div>
                         </div>
                     </div>
@@ -1482,7 +1482,7 @@
 
             window.scrollTo(0, 0);
 
-            // Wait for images/layout
+            // Wait for images/layout (reduced from 500ms for faster print)
             setTimeout(() => {
                 if (mode === 'print') {
                     // Setup cleanup listener before printing
@@ -1546,7 +1546,7 @@
                             cleanup();
                         });
                 }
-            }, 500);
+            }, 100); // Reduced from 500ms for faster print dialog
 
             function cleanup() {
                 if (document.body.contains(container)) {
