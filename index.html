@@ -1028,6 +1028,8 @@
                                 onclick="handleExport('print')">YAZDIR / PDF</button>
                             <button class="btn btn-mobile-pdf" onclick="handleExport('download')">PDF İNDİR</button>
                         </div>
+                        <button class="btn btn-success" style="margin-top:5px; background:#217346;"
+                            onclick="exportToExcel()">EXCEL İNDİR</button>
 
                         <button class="btn btn-danger" style="margin-top:10px; display:none;" id="btn-del"
                             onclick="deleteInvoice()">SİL</button>
@@ -1349,7 +1351,7 @@
                             <div></div>
                             <div>
                                 <strong>FON KOZMETIK SAN. VE TIC. LTD. STI.</strong><br>
-                                <img src="sign.png" style="height:150px; margin-top:5px; object-fit:contain;" alt="Signature">
+                                <img src="sign.png" style="height:60px; margin-top:5px; object-fit:contain;" alt="Signature">
                             </div>
                         </div>
                     </div>
@@ -1360,7 +1362,7 @@
             let pageContent = headerHTML;
             let rowsHTML = '';
             let itemCount = 0, grandTotal = 0, totalUnits = 0;
-            const LIMIT_FIRST = 20; // Reduced from 19 to prevent overflow with larger signature
+            const LIMIT_FIRST = 22; // Increased due to smaller signature (60px instead of 150px)
             const LIMIT_OTHER = 24;
             let currentLimit = LIMIT_FIRST;
             let pageIndex = 1;
@@ -1507,8 +1509,9 @@
                         if (signBase64) {
                             img.src = signBase64;
                         }
-                        img.style.maxWidth = '100%';
-                        img.style.height = 'auto';
+                        img.style.maxWidth = '150px'; // Limit width
+                        img.style.height = '60px';   // Force height to match preview approximately
+                        img.style.objectFit = 'contain';
                     }
                 });
 
@@ -1616,7 +1619,225 @@
             }
         }
 
-        // --- DİĞER FONKSİYONLAR ---
+        // --- EXCEL EXPORT ---
+        function exportToExcel() {
+            const d = {
+                type: document.getElementById('i-type').value,
+                imp: document.getElementById('i-imp').value,
+                addr: document.getElementById('i-addr').value,
+                tel: document.getElementById('i-tel').value,
+                no: document.getElementById('i-no').value,
+                date: formatDateDDMMYYYY(document.getElementById('i-date').value),
+                contr: document.getElementById('i-contr').value,
+                load: document.getElementById('i-load').value,
+                trans: document.getElementById('i-trans').value,
+                pay: document.getElementById('i-pay').value,
+                del: document.getElementById('i-del').value,
+                box: document.getElementById('i-box').value,
+                nw: document.getElementById('i-nw').value,
+                gw: document.getElementById('i-gw').value,
+                cur: document.getElementById('i-currency').value,
+                gtip: document.getElementById('i-gtip').value
+            };
+
+            let rows = '';
+            let grandTotal = 0;
+            let totalUnits = 0;
+
+            items.forEach((item, i) => {
+                let t = item.qty * item.price;
+                grandTotal += t;
+                totalUnits += item.qty;
+                rows += `
+                    <tr>
+                        <td style="border:1px solid #000; text-align:center;">${i + 1}</td>
+                        <td style="border:1px solid #000;">${item.name}</td>
+                        <td style="border:1px solid #000;">${item.code}</td>
+                        <td style="border:1px solid #000; text-align:center;">${item.qty}</td>
+                        <td style="border:1px solid #000; text-align:right;">${item.price.toFixed(2)}</td>
+                        <td style="border:1px solid #000; text-align:right;">${t.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            // Amount in words
+            let currencyName = d.cur;
+            let minorUnit = 'Cents';
+            if (d.cur === 'TL') { currencyName = 'Turkish Liras'; minorUnit = 'Kurus'; }
+            if (d.cur === 'EUR') { currencyName = 'Euros'; }
+            if (d.cur === 'RUB') { currencyName = 'Rubles'; minorUnit = 'Kopeks'; }
+            if (d.cur === 'USD') { currencyName = 'Dollars'; }
+
+            let wholePart = Math.floor(grandTotal);
+            let decimalPart = Math.round((grandTotal - wholePart) * 100);
+            let textTotal = `${numberToEnglishWords(wholePart)} ${currencyName}`;
+            if (decimalPart > 0) textTotal += ` and ${numberToEnglishWords(decimalPart)} ${minorUnit}`;
+            else textTotal += ` Only`;
+
+            const excelHTML = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Invoice</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <meta charset="UTF-8">
+                    <style>
+                        td { font-family: 'Calibri', sans-serif; font-size: 11pt; }
+                        .bold { font-weight: bold; }
+                        .center { text-align: center; }
+                        .right { text-align: right; }
+                        .border { border: 1px solid #000; }
+                        .bg-gray { background-color: #f2f2f2; }
+                        .header-text { font-size: 10pt; }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <!-- HEADER -->
+                        <tr>
+                            <td colspan="2" rowspan="4" style="text-align:center; vertical-align:middle;">
+                                <img src="${logoBase64}" width="150" height="50">
+                            </td>
+                            <td colspan="4" class="right header-text">
+                                <b>FON KOZMETİK SAN. VE TİC. LTD. ŞTİ.</b><br>
+                                Ortaköy Merkez Mah. Yeldeğirmeni Cad. No:17/A<br>
+                                Silivri / İSTANBUL - TURKEY<br><br>
+                                Tel: +90 212 734 38 20 | info@fonkozmetik.com
+                            </td>
+                        </tr>
+                        <tr></tr><tr></tr><tr></tr>
+                        
+                        <!-- TITLE -->
+                        <tr>
+                            <td colspan="6" class="center bold" style="font-size:14pt; padding:10px;">${d.type}</td>
+                        </tr>
+
+                        <!-- INFO BOXES -->
+                        <tr>
+                            <td colspan="3" rowspan="4" class="border" style="vertical-align:top; padding:5px;">
+                                <b>${d.imp}</b><br>
+                                ${d.addr}<br>
+                                ${d.tel}
+                            </td>
+                            <td class="border bg-gray bold">Invoice No:</td>
+                            <td colspan="2" class="border center">${d.no}</td>
+                        </tr>
+                        <tr>
+                            <td class="border bg-gray bold">Date:</td>
+                            <td colspan="2" class="border center">${d.date}</td>
+                        </tr>
+                        <tr>
+                            <td class="border bg-gray bold">Contact:</td>
+                            <td colspan="2" class="border center">${d.contr}</td>
+                        </tr>
+                        <tr></tr> <!-- Spacer for rowspan -->
+
+                        <tr><td colspan="6" style="height:10px;"></td></tr>
+
+                        <!-- TABLE HEADER -->
+                        <tr class="bg-gray bold center">
+                            <td class="border" style="width:50px;">No</td>
+                            <td class="border" style="width:300px;">Description</td>
+                            <td class="border" style="width:100px;">Code</td>
+                            <td class="border" style="width:80px;">Qty</td>
+                            <td class="border" style="width:100px;">Prices</td>
+                            <td class="border" style="width:120px;">Total</td>
+                        </tr>
+
+                        <!-- ITEMS -->
+                        ${rows}
+
+                        <!-- TOTALS -->
+                        <tr>
+                            <td colspan="5" class="border right bold">TOTAL ${d.cur}</td>
+                            <td class="border right bold">${grandTotal.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="center bold italic" style="padding:10px;">"${textTotal}"</td>
+                        </tr>
+
+                        <tr><td colspan="6" style="height:10px;"></td></tr>
+
+                        <!-- SHIPPING -->
+                        <tr class="bg-black bold center" style="color:white; background-color:black;">
+                            <td colspan="6" class="border">SHIPPING & LOGISTIC DETAILS</td>
+                        </tr>
+                        <tr class="center bold">
+                            <td colspan="2" class="border">Loading:</td>
+                            <td colspan="2" class="border">Transport:</td>
+                            <td class="border">Payment Conditions:</td>
+                            <td class="border">Delivery:</td>
+                        </tr>
+                        <tr class="center">
+                            <td colspan="2" class="border">${d.load}</td>
+                            <td colspan="2" class="border">${d.trans}</td>
+                            <td class="border">${d.pay}</td>
+                            <td class="border">${d.del}</td>
+                        </tr>
+                        <tr class="center bold">
+                            <td colspan="2" class="border">Boxes:</td>
+                            <td colspan="2" class="border">Net KG:</td>
+                            <td class="border">Gross KG:</td>
+                            <td class="border">Total QTY:</td>
+                        </tr>
+                        <tr class="center">
+                            <td colspan="2" class="border">${d.box}</td>
+                            <td colspan="2" class="border">${d.nw}</td>
+                            <td class="border">${d.gw}</td>
+                            <td class="border">${totalUnits} PCS</td>
+                        </tr>
+
+                        <tr><td colspan="6" style="height:20px;"></td></tr>
+
+                        <!-- FOOTER -->
+                        <tr>
+                            <td colspan="3" style="vertical-align:top; font-size:9pt;">
+                                <b>MANUFACTURER:</b> FON KOZMETIK SAN. VE TIC. LTD. STI.<br>
+                                ${d.gtip ? `<b>G.T.I.P:</b> ${d.gtip}<br>` : ''}
+                                GOODS ARE OF TURKISH ORIGIN.
+                            </td>
+                            <td colspan="3" class="border center" style="vertical-align:top; font-size:9pt;">
+                                <b>BANK: VAKIFBANK (${d.cur})</b><br>
+                                BENEFICIARY: FON KOZMETİK SAN.VE TİC.LTD.ŞTİ.<br>
+                                IBAN: TR81 0001 5001 5804 8020 9710 65<br>
+                                SWIFT: TVBATR2A
+                            </td>
+                        </tr>
+
+                        <tr><td colspan="6" style="height:20px;"></td></tr>
+
+                        <tr>
+                            <td colspan="3"></td>
+                            <td colspan="3" class="center bold">
+                                FON KOZMETIK SAN. VE TIC. LTD. STI.<br>
+                                <img src="${signBase64}" width="150" height="100">
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Fatura_${d.no}.xls`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
         function resetForm() {
             currentId = null;
             document.getElementById('btn-del').style.display = 'none';
