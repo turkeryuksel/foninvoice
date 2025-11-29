@@ -1424,26 +1424,60 @@
 
 
         let logoBase64 = '';
+        let signBase64 = '';
 
-        // Convert logo to base64 on page load
-        function convertLogoToBase64() {
-            const img = new Image();
-            img.crossOrigin = 'Anonymous';
-            img.onload = function () {
+        // Convert images to base64 on page load
+        function convertImagesToBase64() {
+            // Logo
+            const imgLogo = new Image();
+            imgLogo.crossOrigin = 'Anonymous';
+            imgLogo.onload = function () {
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = imgLogo.width;
+                canvas.height = imgLogo.height;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(imgLogo, 0, 0);
                 logoBase64 = canvas.toDataURL('image/png');
             };
-            img.src = 'fonlogo.png';
+            imgLogo.src = 'fonlogo.png';
+
+            // Signature
+            const imgSign = new Image();
+            imgSign.crossOrigin = 'Anonymous';
+            imgSign.onload = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = imgSign.width;
+                canvas.height = imgSign.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgSign, 0, 0);
+                signBase64 = canvas.toDataURL('image/png');
+            };
+            imgSign.src = 'sign.png';
         }
 
         // --- EXPORT FUNCTION (PRINT & PDF) ---
         function handleExport(mode) {
             const pages = document.querySelectorAll('.page');
             if (pages.length === 0) return alert("Önce fatura oluşturmalısınız.");
+
+            // Show loading
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'export-loading';
+            loadingDiv.style.position = 'fixed';
+            loadingDiv.style.top = '0';
+            loadingDiv.style.left = '0';
+            loadingDiv.style.width = '100%';
+            loadingDiv.style.height = '100%';
+            loadingDiv.style.background = 'rgba(0,0,0,0.8)';
+            loadingDiv.style.color = 'white';
+            loadingDiv.style.zIndex = '10000000';
+            loadingDiv.style.display = 'flex';
+            loadingDiv.style.alignItems = 'center';
+            loadingDiv.style.justifyContent = 'center';
+            loadingDiv.style.fontSize = '24px';
+            loadingDiv.style.fontWeight = 'bold';
+            loadingDiv.innerHTML = '<div>İşlem Yapılıyor...<br><span style="font-size:14px; font-weight:normal">Lütfen bekleyiniz.</span></div>';
+            document.body.appendChild(loadingDiv);
 
             const originalScrollPos = window.scrollY;
 
@@ -1470,6 +1504,9 @@
                         img.src = logoBase64;
                     }
                     if (img.src.includes('sign.png')) {
+                        if (signBase64) {
+                            img.src = signBase64;
+                        }
                         img.style.maxWidth = '100%';
                         img.style.height = 'auto';
                     }
@@ -1557,9 +1594,12 @@
                             cleanup();
                         });
                 }
-            }, 100); // Reduced from 500ms for faster print dialog
+            }, 1000); // Increased wait time for better rendering
 
             function cleanup() {
+                if (document.getElementById('export-loading')) {
+                    document.body.removeChild(document.getElementById('export-loading'));
+                }
                 if (document.body.contains(container)) {
                     document.body.removeChild(container);
                 }
@@ -1762,7 +1802,7 @@
         window.onload = () => {
             document.getElementById('i-date').valueAsDate = new Date();
             renderPages();
-            convertLogoToBase64();
+            convertImagesToBase64();
         }
     </script>
 </body>
