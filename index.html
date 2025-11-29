@@ -1351,7 +1351,7 @@
                             <div></div>
                             <div>
                                 <strong>FON KOZMETIK SAN. VE TIC. LTD. STI.</strong><br>
-                                <img src="sign.png" style="height:60px; margin-top:5px; object-fit:contain;" alt="Signature">
+                                <img src="sign.png" style="height:150px; margin-top:5px; object-fit:contain;" alt="Signature">
                             </div>
                         </div>
                     </div>
@@ -1362,7 +1362,7 @@
             let pageContent = headerHTML;
             let rowsHTML = '';
             let itemCount = 0, grandTotal = 0, totalUnits = 0;
-            const LIMIT_FIRST = 22; // Increased due to smaller signature (60px instead of 150px)
+            const LIMIT_FIRST = 20; // Fits with 150px signature without overflow
             const LIMIT_OTHER = 24;
             let currentLimit = LIMIT_FIRST;
             let pageIndex = 1;
@@ -1509,8 +1509,8 @@
                         if (signBase64) {
                             img.src = signBase64;
                         }
-                        img.style.maxWidth = '150px'; // Limit width
-                        img.style.height = '60px';   // Force height to match preview approximately
+                        img.style.maxWidth = '200px'; // Limit width
+                        img.style.height = '150px';   // Match preview size exactly
                         img.style.objectFit = 'contain';
                     }
                 });
