@@ -826,9 +826,11 @@
             }
 
             /* Each page should be exactly one A4 page */
-            .page {
+            .page,
+            .pdf-final-page {
                 margin: 0 !important;
-                padding: 15mm !important;
+                padding: 15mm 15mm 100mm 15mm !important;
+                /* Bottom padding for footer */
                 width: 210mm !important;
                 height: 297mm !important;
                 max-width: 210mm !important;
@@ -836,25 +838,35 @@
                 box-shadow: none !important;
                 page-break-after: always !important;
                 page-break-inside: avoid !important;
-                display: flex !important;
-                flex-direction: column !important;
                 position: relative !important;
+                display: block !important;
+                /* Remove flex to use absolute positioning */
+                overflow: hidden !important;
+                /* Prevent content spill */
             }
 
-            .page:last-child {
+            .page:last-child,
+            .pdf-final-page:last-child {
                 page-break-after: avoid !important;
             }
 
             /* Content should take available space */
             .page>div:not(.footer-wrapper) {
-                flex: 0 0 auto !important;
+                /* No specific flex rules needed for block layout */
             }
 
-            /* Footer at bottom using margin-top auto */
+            /* Footer at bottom using absolute positioning */
             .footer-wrapper {
-                margin-top: auto !important;
-                flex-shrink: 0 !important;
+                position: absolute !important;
+                bottom: 15mm !important;
+                left: 15mm !important;
+                right: 15mm !important;
+                width: calc(210mm - 30mm) !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 page-break-inside: avoid !important;
+                background: white;
+                /* Ensure it covers anything behind it */
             }
 
             /* Prevent breaks inside critical elements */
@@ -893,20 +905,10 @@
             #pdf-isolation-layer .ship-grid {
                 display: grid !important;
             }
+        }
 
-            .pdf-final-page {
-                margin: 0 !important;
-                page-break-after: always !important;
-                box-shadow: none !important;
-                width: 100% !important;
-                height: 297mm !important;
-                overflow: hidden !important;
-                background: white !important;
-            }
-
-            .pdf-final-page:last-child {
-                page-break-after: avoid !important;
-            }
+        .pdf-final-page:last-child {
+            page-break-after: avoid !important;
         }
 
         .action-btn {
