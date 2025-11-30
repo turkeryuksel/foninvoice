@@ -1663,12 +1663,12 @@
                     totalUnits += item.qty;
                     rows += `
                         <tr>
-                            <td class="border center">${i + 1}</td>
-                            <td class="border left">${item.name}</td>
-                            <td class="border center">${item.code}</td>
-                            <td class="border center">${item.qty}</td>
-                            <td class="border right">${item.price.toFixed(2)}</td>
-                            <td class="border right">${t.toFixed(2)}</td>
+                            <td style="border:1px solid #000; text-align:center;">${i + 1}</td>
+                            <td style="border:1px solid #000; text-align:left;">${item.name}</td>
+                            <td style="border:1px solid #000; text-align:center;">${item.code}</td>
+                            <td style="border:1px solid #000; text-align:center;">${item.qty}</td>
+                            <td style="border:1px solid #000; text-align:right;">${curSym} ${item.price.toFixed(2)}</td>
+                            <td style="border:1px solid #000; text-align:right;">${curSym} ${t.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -1762,13 +1762,13 @@
                             <tr><td colspan="6" style="height:10px;"></td></tr>
 
                             <!-- TABLE HEADER -->
-                            <tr style="font-weight:bold; text-align:center; border:1px solid #000;">
-                                <td class="border center" style="width:50px;">No</td>
-                                <td class="border center" style="width:400px;">Description</td>
-                                <td class="border center" style="width:120px;">Code</td>
-                                <td class="border center" style="width:80px;">Qty</td>
-                                <td class="border center" style="width:100px;">Prices</td>
-                                <td class="border center" style="width:120px;">Total</td>
+                            <tr style="font-weight:bold; text-align:center;">
+                                <td style="border:1px solid #000; text-align:center; width:50px;">No</td>
+                                <td style="border:1px solid #000; text-align:center; width:400px;">Description</td>
+                                <td style="border:1px solid #000; text-align:center; width:120px;">Code</td>
+                                <td style="border:1px solid #000; text-align:center; width:80px;">Qty</td>
+                                <td style="border:1px solid #000; text-align:center; width:100px;">Prices</td>
+                                <td style="border:1px solid #000; text-align:center; width:120px;">Total</td>
                             </tr>
 
                             <!-- ITEMS -->
@@ -1776,13 +1776,13 @@
 
                             <!-- TOTAL -->
                             <tr>
-                                <td colspan="5" class="border right bold">TOTAL ${d.cur}:</td>
-                                <td class="border right bold">${curSym} ${grandTotal.toFixed(2)}</td>
+                                <td colspan="5" style="border:1px solid #000; text-align:right; font-weight:bold;">TOTAL ${d.cur}:</td>
+                                <td style="border:1px solid #000; text-align:right; font-weight:bold;">${curSym} ${grandTotal.toFixed(2)}</td>
                             </tr>
                             
                             <!-- AMOUNT IN WORDS -->
                             <tr>
-                                <td colspan="6" class="border center">"${textTotal}"</td>
+                                <td colspan="6" style="border:1px solid #000; text-align:center;">"${textTotal}"</td>
                             </tr>
 
                             <tr><td colspan="6" style="height:10px;"></td></tr>
@@ -1794,34 +1794,34 @@
                             
                             <!-- SHIPPING LABELS ROW 1 -->
                             <tr style="text-align:center;">
-                                <td colspan="2" class="border">Loading:</td>
-                                <td colspan="2" class="border">Transport:</td>
-                                <td class="border">Payment Conditions:</td>
-                                <td class="border">Delivery:</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">Loading:</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">Transport:</td>
+                                <td style="border:1px solid #000; text-align:center;">Payment Conditions:</td>
+                                <td style="border:1px solid #000; text-align:center;">Delivery:</td>
                             </tr>
                             
                             <!-- SHIPPING VALUES ROW 1 -->
                             <tr style="text-align:center; font-weight:bold; text-transform:uppercase;">
-                                <td colspan="2" class="border">${d.load}</td>
-                                <td colspan="2" class="border">${d.trans}</td>
-                                <td class="border">${d.pay}</td>
-                                <td class="border">${d.del}</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">${d.load}</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">${d.trans}</td>
+                                <td style="border:1px solid #000; text-align:center;">${d.pay}</td>
+                                <td style="border:1px solid #000; text-align:center;">${d.del}</td>
                             </tr>
                             
                             <!-- SHIPPING LABELS ROW 2 -->
                             <tr style="text-align:center;">
-                                <td colspan="2" class="border">Boxes:</td>
-                                <td colspan="2" class="border">Net KG:</td>
-                                <td class="border">Gross KG:</td>
-                                <td class="border">Total QTY:</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">Boxes:</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">Net KG:</td>
+                                <td style="border:1px solid #000; text-align:center;">Gross KG:</td>
+                                <td style="border:1px solid #000; text-align:center;">Total QTY:</td>
                             </tr>
                             
                             <!-- SHIPPING VALUES ROW 2 -->
                             <tr style="text-align:center; font-weight:bold;">
-                                <td colspan="2" class="border">${d.box}</td>
-                                <td colspan="2" class="border">${d.nw}</td>
-                                <td class="border">${d.gw}</td>
-                                <td class="border">${totalUnits} PCS</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">${d.box}</td>
+                                <td colspan="2" style="border:1px solid #000; text-align:center;">${d.nw}</td>
+                                <td style="border:1px solid #000; text-align:center;">${d.gw}</td>
+                                <td style="border:1px solid #000; text-align:center;">${totalUnits} PCS</td>
                             </tr>
 
                             <tr><td colspan="6" style="height:15px;"></td></tr>
