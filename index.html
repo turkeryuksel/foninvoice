@@ -1672,7 +1672,7 @@
                         <!-- HEADER -->
                         <tr>
                             <td colspan="2" rowspan="4" style="text-align:center; vertical-align:middle;">
-                                <img src="${logoBase64}" width="180" height="60" alt="Logo">
+                                <img src="${logoBase64}" width="180" height="60">
                             </td>
                             <td colspan="4" class="right header-text">
                                 <b>FON KOZMETİK SAN. VE TİC. LTD. ŞTİ.</b><br>
@@ -1726,20 +1726,19 @@
                         <!-- TOTALS -->
                         <tr>
                             <td colspan="5" class="border right bold">TOTAL ${d.cur}</td>
-                            <td class="border right bold">${grandTotal.toFixed(2)}</td>
+                            <td class="border right bold">${curSym}${grandTotal.toFixed(2)}</td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="center bold italic" style="padding:10px;">"${textTotal}"</td>
+                            <td colspan="6" class="border center bold">"${textTotal}"</td>
                         </tr>
 
                         <tr><td colspan="6" style="height:10px;"></td></tr>
 
                         <!-- SHIPPING -->
-                        <!-- SHIPPING -->
                         <tr style="height:25px;">
                             <td colspan="6" class="border" style="background-color:black; color:white; font-weight:bold; text-align:center; font-size:11pt;">SHIPPING & LOGISTIC DETAILS</td>
                         </tr>
-                        <tr class="center bold">
+                        <tr class="center">
                             <td colspan="2" class="border">Loading:</td>
                             <td colspan="2" class="border">Transport:</td>
                             <td class="border">Payment Conditions:</td>
@@ -1751,7 +1750,7 @@
                             <td class="border" style="font-weight:bold;">${d.pay}</td>
                             <td class="border" style="font-weight:bold;">${d.del}</td>
                         </tr>
-                        <tr class="center bold">
+                        <tr class="center">
                             <td colspan="2" class="border">Boxes:</td>
                             <td colspan="2" class="border">Net KG:</td>
                             <td class="border">Gross KG:</td>
