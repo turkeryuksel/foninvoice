@@ -1721,7 +1721,7 @@
 
                             <!-- CUSTOMER & INVOICE INFO -->
                             <tr>
-                                <td colspan="3" rowspan="3" class="border" style="vertical-align:top;">
+                                <td colspan="3" rowspan="3" style="vertical-align:top;">
                                     <b>${d.imp}</b><br>
                                     ${d.addr}<br>
                                     ${d.tel}
@@ -1741,7 +1741,7 @@
                             <tr><td colspan="6" style="height:10px;"></td></tr>
 
                             <!-- TABLE HEADER -->
-                            <tr style="font-weight:bold; text-align:center;">
+                            <tr style="font-weight:bold; text-align:center; border:1px solid #000;">
                                 <td class="border center" style="width:50px;">No</td>
                                 <td class="border center" style="width:400px;">Description</td>
                                 <td class="border center" style="width:120px;">Code</td>
@@ -1756,7 +1756,7 @@
                             <!-- TOTAL -->
                             <tr>
                                 <td colspan="5" class="border right bold">TOTAL ${d.cur}:</td>
-                                <td class="border right bold">${grandTotal.toFixed(2)}</td>
+                                <td class="border right bold">${curSym} ${grandTotal.toFixed(2)}</td>
                             </tr>
                             
                             <!-- AMOUNT IN WORDS -->
@@ -1780,7 +1780,7 @@
                             </tr>
                             
                             <!-- SHIPPING VALUES ROW 1 -->
-                            <tr style="text-align:center; font-weight:bold;">
+                            <tr style="text-align:center; font-weight:bold; text-transform:uppercase;">
                                 <td colspan="2" class="border">${d.load}</td>
                                 <td colspan="2" class="border">${d.trans}</td>
                                 <td class="border">${d.pay}</td>
