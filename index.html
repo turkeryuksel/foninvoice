@@ -797,49 +797,70 @@
 
         @media print {
 
-            /* Hide everything by default that has the hidden class */
+            /* Hide non-print elements */
             .hidden-for-print {
                 display: none !important;
             }
 
+            /* Remove all margins and set page size */
             @page {
                 margin: 0;
-                size: A4;
+                size: A4 portrait;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             html,
             body {
                 margin: 0 !important;
                 padding: 0 !important;
+                width: 210mm;
+                height: 297mm;
             }
 
-            body,
+            body {
+                background: white !important;
+            }
+
+            /* Each page should be exactly one A4 page */
             .page {
                 margin: 0 !important;
-                padding: 20mm 15mm !important;
-                width: 100% !important;
-                max-width: none !important;
+                padding: 15mm !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                max-width: 210mm !important;
+                box-sizing: border-box !important;
                 box-shadow: none !important;
                 page-break-after: always !important;
-                min-height: 100vh;
-                position: relative;
+                page-break-inside: avoid !important;
+                display: flex !important;
+                flex-direction: column !important;
+                position: relative !important;
             }
 
             .page:last-child {
                 page-break-after: avoid !important;
             }
 
-            .footer-wrapper {
-                position: absolute;
-                bottom: 20mm;
-                left: 15mm;
-                right: 15mm;
-                width: calc(100% - 30mm);
+            /* Content should take available space */
+            .page>div:not(.footer-wrapper) {
+                flex: 0 0 auto !important;
             }
 
-            /* Prevent page breaks inside important elements */
+            /* Footer at bottom using margin-top auto */
+            .footer-wrapper {
+                margin-top: auto !important;
+                flex-shrink: 0 !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Prevent breaks inside critical elements */
             .ship-box,
-            .footer {
+            .footer,
+            table {
                 page-break-inside: avoid !important;
             }
 
@@ -1588,7 +1609,7 @@
                         // For now, we rely on afterprint or user refresh if stuck.
                     }
                 }, 2000);
-            }, 100); // Minimal wait time
+            }, 50); // Reduced from 100ms to 50ms
 
             function cleanup() {
                 if (document.getElementById('export-loading')) {
