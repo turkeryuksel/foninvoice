@@ -1409,19 +1409,25 @@
                     </div>
             `;
 
+            const LIMIT_FIRST = 10; // Reduced to 10 to safely fit footer and prevent blank pages
+            const LIMIT_OTHER = 10; // Same limit for all pages
+
             let currentPage = document.createElement('div'); currentPage.className = 'page';
             container.appendChild(currentPage);
+
+            let pageIndex = 1;
+            let itemCount = 0;
+            let currentLimit = LIMIT_FIRST;
+            let grandTotal = 0;
+            let totalUnits = 0;
+
             let pageContent = headerHTML;
             let rowsHTML = '';
-            let itemCount = 0, grandTotal = 0, totalUnits = 0;
-            const LIMIT_FIRST = 20; // Fits with 150px signature without overflow
-            const LIMIT_OTHER = 24;
-            let currentLimit = LIMIT_FIRST;
-            let pageIndex = 1;
 
             items.forEach((item, index) => {
                 let t = item.qty * item.price;
-                grandTotal += t; totalUnits += item.qty;
+                grandTotal += t;
+                totalUnits += item.qty;
                 rowsHTML += `<tr>
                     <td style="text-align:center">${index + 1}</td>
                     <td>${item.name}</td>
@@ -1431,18 +1437,30 @@
                     <td style="text-align:right">${curSym}${t.toFixed(2)}</td>
                 </tr>`;
                 itemCount++;
+
+                // Check if we need a new page
                 if (itemCount >= currentLimit && index < items.length - 1) {
-                    let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length / LIMIT_OTHER)}</div>` : '';
-                    currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + `</tbody></table></div>`;
+                    // Close current page
+                    let pageNumHtml = `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length / LIMIT_OTHER)}</div>`;
+                    // Add footer to EVERY page
+                    currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + getFooterHTML(grandTotal, totalUnits);
+
+                    // Create new page
                     currentPage = document.createElement('div'); currentPage.className = 'page';
                     container.appendChild(currentPage);
                     pageIndex++;
+
+                    // Reset for next page
+                    // For subsequent pages, we might want a simpler header or the same header.
+                    // Usually invoices repeat the header.
                     pageContent = headerHTML;
-                    rowsHTML = ''; itemCount = 0; currentLimit = LIMIT_OTHER;
+                    rowsHTML = '';
+                    itemCount = 0;
+                    currentLimit = LIMIT_OTHER;
                 }
             });
 
-            // Add Grand Total and Amount in Words
+            // Add Grand Total and Amount in Words to the LAST page's rows
             let currencyName = d.cur;
             let minorUnit = 'Cents';
             if (d.cur === 'TL') { currencyName = 'Turkish Liras'; minorUnit = 'Kurus'; }
@@ -1471,7 +1489,8 @@
                 </tr>
             `;
 
-            let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length / LIMIT_OTHER)}</div>` : '';
+            // Finalize the last page
+            let pageNumHtml = `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length / LIMIT_OTHER)}</div>`;
             currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + getFooterHTML(grandTotal, totalUnits);
         }
 
@@ -1653,6 +1672,8 @@
                     gtip: document.getElementById('i-gtip').value
                 };
 
+                const curSym = d.cur === 'USD' ? '$' : (d.cur === 'EUR' ? '€' : (d.cur === 'TL' ? '₺' : '₽'));
+
                 let rows = '';
                 let grandTotal = 0;
                 let totalUnits = 0;
@@ -1681,7 +1702,7 @@
                 if (d.cur === 'RUB') { currencyName = 'Rubles'; minorUnit = 'Kopeks'; }
                 if (d.cur === 'USD') { currencyName = 'Dollars'; }
 
-                const curSym = d.cur === 'USD' ? '$' : (d.cur === 'EUR' ? '€' : (d.cur === 'TL' ? '₺' : '₽'));
+
 
                 let wholePart = Math.floor(grandTotal);
                 let decimalPart = Math.round((grandTotal - wholePart) * 100);
