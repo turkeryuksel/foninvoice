@@ -1633,6 +1633,8 @@
                 if (d.cur === 'RUB') { currencyName = 'Rubles'; minorUnit = 'Kopeks'; }
                 if (d.cur === 'USD') { currencyName = 'Dollars'; }
 
+                const curSym = d.cur === 'USD' ? '$' : (d.cur === 'EUR' ? '€' : (d.cur === 'TL' ? '₺' : '₽'));
+
                 let wholePart = Math.floor(grandTotal);
                 let decimalPart = Math.round((grandTotal - wholePart) * 100);
                 let textTotal = `${numberToEnglishWords(wholePart)} ${currencyName}`;
