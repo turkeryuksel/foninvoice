@@ -1712,7 +1712,7 @@
                         <!-- HEADER -->
                         <tr>
                             <td colspan="2" rowspan="4" style="text-align:center; vertical-align:middle;">
-                                <img src="${logoBase64}" width="150" height="50">
+                                <img src="${logoBase64}" width="180" style="width:180px; height:auto;">
                             </td>
                             <td colspan="4" class="right header-text">
                                 <b>FON KOZMETİK SAN. VE TİC. LTD. ŞTİ.</b><br>
@@ -1725,7 +1725,7 @@
                         
                         <!-- TITLE -->
                         <tr>
-                            <td colspan="6" class="center title-text" style="padding:10px;">${d.type}</td>
+                            <td colspan="6" class="center" style="font-size:20pt; font-weight:bold; text-align:center; padding:10px;">${d.type}</td>
                         </tr>
 
                         <!-- INFO BOXES -->
@@ -1775,8 +1775,9 @@
                         <tr><td colspan="6" style="height:10px;"></td></tr>
 
                         <!-- SHIPPING -->
-                        <tr class="bg-black bold center" style="color:white; background-color:black;">
-                            <td colspan="6" class="border">SHIPPING & LOGISTIC DETAILS</td>
+                        <!-- SHIPPING -->
+                        <tr style="height:25px;">
+                            <td colspan="6" class="border" style="background-color:black; color:white; font-weight:bold; text-align:center; font-size:11pt;">SHIPPING & LOGISTIC DETAILS</td>
                         </tr>
                         <tr class="center bold">
                             <td colspan="2" class="border">Loading:</td>
@@ -1785,10 +1786,10 @@
                             <td class="border">Delivery:</td>
                         </tr>
                         <tr class="center">
-                            <td colspan="2" class="border">${d.load}</td>
-                            <td colspan="2" class="border">${d.trans}</td>
-                            <td class="border">${d.pay}</td>
-                            <td class="border">${d.del}</td>
+                            <td colspan="2" class="border" style="font-weight:bold;">${d.load}</td>
+                            <td colspan="2" class="border" style="font-weight:bold;">${d.trans}</td>
+                            <td class="border" style="font-weight:bold;">${d.pay}</td>
+                            <td class="border" style="font-weight:bold;">${d.del}</td>
                         </tr>
                         <tr class="center bold">
                             <td colspan="2" class="border">Boxes:</td>
@@ -1797,10 +1798,10 @@
                             <td class="border">Total QTY:</td>
                         </tr>
                         <tr class="center">
-                            <td colspan="2" class="border">${d.box}</td>
-                            <td colspan="2" class="border">${d.nw}</td>
-                            <td class="border">${d.gw}</td>
-                            <td class="border">${totalUnits} PCS</td>
+                            <td colspan="2" class="border" style="font-weight:bold;">${d.box}</td>
+                            <td colspan="2" class="border" style="font-weight:bold;">${d.nw}</td>
+                            <td class="border" style="font-weight:bold;">${d.gw}</td>
+                            <td class="border" style="font-weight:bold;">${totalUnits} PCS</td>
                         </tr>
 
                         <tr><td colspan="6" style="height:20px;"></td></tr>
