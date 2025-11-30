@@ -1560,6 +1560,11 @@
 
             const originalScrollPos = window.scrollY;
 
+            // Cleanup any existing container first
+            if (document.getElementById('pdf-isolation-layer')) {
+                document.body.removeChild(document.getElementById('pdf-isolation-layer'));
+            }
+
             // Create isolated container
             const container = document.createElement('div');
             container.id = 'pdf-isolation-layer';
