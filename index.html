@@ -14,7 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 
     <style>
         /* --- CSS RESET --- */
@@ -1433,32 +1433,38 @@
         let signBase64 = '';
 
         // Convert images to base64 on page load
+        // Convert images to base64 on page load (with resizing for performance)
         function convertImagesToBase64() {
-            // Logo
-            const imgLogo = new Image();
-            imgLogo.crossOrigin = 'Anonymous';
-            imgLogo.onload = function () {
-                const canvas = document.createElement('canvas');
-                canvas.width = imgLogo.width;
-                canvas.height = imgLogo.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(imgLogo, 0, 0);
-                logoBase64 = canvas.toDataURL('image/png');
-            };
-            imgLogo.src = 'fonlogo.png';
+            const MAX_WIDTH = 500; // Limit width to 500px for faster processing
 
-            // Signature
-            const imgSign = new Image();
-            imgSign.crossOrigin = 'Anonymous';
-            imgSign.onload = function () {
-                const canvas = document.createElement('canvas');
-                canvas.width = imgSign.width;
-                canvas.height = imgSign.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(imgSign, 0, 0);
-                signBase64 = canvas.toDataURL('image/png');
+            const processImage = (src, callback) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function () {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/png', 0.8)); // Use 0.8 quality
+                };
+                img.onerror = function () {
+                    console.error("Image load failed:", src);
+                    callback(''); // Return empty string on error
+                };
+                img.src = src;
             };
-            imgSign.src = 'sign.png';
+
+            processImage('fonlogo.png', (base64) => { logoBase64 = base64; });
+            processImage('sign.png', (base64) => { signBase64 = base64; });
         }
 
         // --- EXPORT FUNCTION (PRINT & PDF) ---
@@ -1539,69 +1545,23 @@
 
             // Wait for images/layout (reduced from 500ms for faster print)
             setTimeout(() => {
-                if (mode === 'print') {
-                    // Setup cleanup listener before printing
-                    const cleanupListener = () => {
-                        cleanup();
-                        window.removeEventListener('afterprint', cleanupListener);
-                    };
-                    window.addEventListener('afterprint', cleanupListener);
+                // Setup cleanup listener before printing
+                const cleanupListener = () => {
+                    cleanup();
+                    window.removeEventListener('afterprint', cleanupListener);
+                };
+                window.addEventListener('afterprint', cleanupListener);
 
-                    window.print();
+                window.print();
 
-                    // Fallback cleanup for browsers that don't block or fire afterprint reliably
-                    // We give it a long timeout (e.g. 5 seconds) to allow the print dialog to initialize
-                    // If the user cancels/prints quickly, afterprint handles it.
-                    // If not, this ensures we don't get stuck in print mode forever.
-                    // However, 5s might be too short if user is selecting printer. 
-                    // Better to rely on user interaction or just leave it? 
-                    // Let's set a very long timeout or just rely on afterprint + a "Restore" button if stuck?
-                    // For now, let's use a 2 second delay which is usually enough for the dialog to grab the content.
-                    // Note: On mobile, print() might be non-blocking.
-                    setTimeout(() => {
-                        // Only cleanup if we haven't already (check if container exists)
-                        if (document.body.contains(container)) {
-                            // On mobile/some browsers, we might want to wait longer.
-                            // But if we cleanup too early, the print preview is blank.
-                            // Let's NOT auto-cleanup on timeout for print, rely on afterprint.
-                            // BUT, if afterprint is not supported?
-                            // Most modern browsers support it.
-                        }
-                    }, 1000);
-                } else {
-                    // PDF Download
-                    const opt = {
-                        margin: [0, 0, 0, 0],
-                        filename: `Fatura_${document.getElementById('i-no').value || 'Draft'}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: {
-                            scale: 2,
-                            useCORS: true,
-                            logging: false,
-                            letterRendering: true,
-                            scrollY: 0,
-                            scrollX: 0,
-                            windowWidth: 794,
-                            backgroundColor: '#ffffff'
-                        },
-                        jsPDF: {
-                            unit: 'mm',
-                            format: 'a4',
-                            orientation: 'portrait',
-                            compress: true
-                        },
-                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                    };
-
-                    html2pdf().set(opt).from(container).save()
-                        .then(() => cleanup())
-                        .catch(err => {
-                            console.error('PDF Error:', err);
-                            alert("PDF oluşturulurken hata: " + err.message);
-                            cleanup();
-                        });
-                }
-            }, 300); // Reduced wait time for faster print
+                // Fallback cleanup
+                setTimeout(() => {
+                    if (document.body.contains(container)) {
+                        // Optional: Auto cleanup if afterprint fails?
+                        // For now, we rely on afterprint or user refresh if stuck.
+                    }
+                }, 2000);
+            }, 100); // Minimal wait time
 
             function cleanup() {
                 if (document.getElementById('export-loading')) {
