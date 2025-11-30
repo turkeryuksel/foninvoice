@@ -804,16 +804,43 @@
 
             @page {
                 margin: 0;
-                size: auto;
+                size: A4;
+            }
+
+            html,
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
             body,
-            html {
-                margin: 0;
-                padding: 0;
-                background: white;
-                height: 100%;
-                overflow: visible;
+            .page {
+                margin: 0 !important;
+                padding: 20mm 15mm !important;
+                width: 100% !important;
+                max-width: none !important;
+                box-shadow: none !important;
+                page-break-after: always !important;
+                min-height: 100vh;
+                position: relative;
+            }
+
+            .page:last-child {
+                page-break-after: avoid !important;
+            }
+
+            .footer-wrapper {
+                position: absolute;
+                bottom: 20mm;
+                left: 15mm;
+                right: 15mm;
+                width: calc(100% - 30mm);
+            }
+
+            /* Prevent page breaks inside important elements */
+            .ship-box,
+            .footer {
+                page-break-inside: avoid !important;
             }
 
             /* Ensure isolation layer is visible and positioned correctly */
