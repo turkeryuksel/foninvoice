@@ -802,6 +802,11 @@
                 display: none !important;
             }
 
+            @page {
+                margin: 0;
+                size: auto;
+            }
+
             body,
             html {
                 margin: 0;
@@ -1023,10 +1028,9 @@
 
                         <button class="btn btn-success" onclick="saveInvoice()">KAYDET (CLOUD)</button>
 
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">
+                        <div style="margin-top:10px;">
                             <button class="btn btn-primary" style="background:#181c32;"
                                 onclick="handleExport('print')">YAZDIR / PDF</button>
-                            <button class="btn btn-mobile-pdf" onclick="handleExport('download')">PDF İNDİR</button>
                         </div>
                         <button class="btn btn-success" style="margin-top:5px; background:#217346;"
                             onclick="exportToExcel()">EXCEL İNDİR</button>
@@ -1379,7 +1383,7 @@
                     <td style="text-align:right">${curSym}${t.toFixed(2)}</td>
                 </tr>`;
                 itemCount++;
-                if (itemCount >= currentLimit) {
+                if (itemCount >= currentLimit && index < items.length - 1) {
                     let pageNumHtml = (items.length > LIMIT_FIRST) ? `<div class="page-num">Page ${pageIndex} / ${Math.ceil(items.length / LIMIT_OTHER)}</div>` : '';
                     currentPage.innerHTML = pageContent.replace(`<div class="inv-title">${d.type}</div>`, `<div class="inv-title">${d.type}</div>${pageNumHtml}`) + rowsHTML + `</tbody></table></div>`;
                     currentPage = document.createElement('div'); currentPage.className = 'page';
@@ -1597,7 +1601,7 @@
                             cleanup();
                         });
                 }
-            }, 1000); // Increased wait time for better rendering
+            }, 300); // Reduced wait time for faster print
 
             function cleanup() {
                 if (document.getElementById('export-loading')) {
@@ -1693,13 +1697,14 @@
                     <![endif]-->
                     <meta charset="UTF-8">
                     <style>
-                        td { font-family: 'Calibri', sans-serif; font-size: 11pt; }
+                        td { font-family: 'Calibri', sans-serif; font-size: 11pt; vertical-align: middle; }
                         .bold { font-weight: bold; }
                         .center { text-align: center; }
                         .right { text-align: right; }
                         .border { border: 1px solid #000; }
                         .bg-gray { background-color: #f2f2f2; }
                         .header-text { font-size: 10pt; }
+                        .title-text { font-size: 14pt; font-weight: bold; text-decoration: underline; }
                     </style>
                 </head>
                 <body>
@@ -1720,7 +1725,7 @@
                         
                         <!-- TITLE -->
                         <tr>
-                            <td colspan="6" class="center bold" style="font-size:14pt; padding:10px;">${d.type}</td>
+                            <td colspan="6" class="center title-text" style="padding:10px;">${d.type}</td>
                         </tr>
 
                         <!-- INFO BOXES -->
@@ -1817,11 +1822,9 @@
 
                         <tr><td colspan="6" style="height:20px;"></td></tr>
 
-                        <tr>
                             <td colspan="3"></td>
                             <td colspan="3" class="center bold">
                                 FON KOZMETIK SAN. VE TIC. LTD. STI.<br>
-                                <img src="${signBase64}" width="150" height="100">
                             </td>
                         </tr>
                     </table>
